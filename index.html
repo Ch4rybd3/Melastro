@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mélastro — thèmes astraux</title>
+<meta name="description" content="Mélastro : calcul et lecture de thèmes astraux, carnet de profils, carte du ciel de naissance, synastrie, transits et statistiques.">
+<meta name="theme-color" content="#14122b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mélastro">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#/carnet"><span class="logo">✦</span> Mélastro</a>
+  <nav class="nav">
+    <a href="#/carnet" data-v="carnet"><span>📖</span>Carnet</a>
+    <a href="#/synastrie" data-v="synastrie"><span>⚭</span>Synastrie</a>
+    <a href="#/ciel" data-v="ciel"><span>🌙</span>Aujourd’hui</a>
+    <a href="#/stats" data-v="stats"><span>📊</span>Stats</a>
+    <a href="#/reglages" data-v="reglages"><span>⚙︎</span>Réglages</a>
+  </nav>
+</header>
+<main id="main"></main>
+<dialog id="dlg"></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="js/astronomy.min.js"></script>
+<script src="data/sky.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/interp.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
