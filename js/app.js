@@ -1,10 +1,10 @@
 /* Mélastro — application */
 (function () {
   'use strict';
-  const E = window.Engine, C = window.Charts, I = window.Interp, esc = C.esc;
+  const E = window.Engine, C = window.Charts, I = window.Interp, esc = C.esc, H = window.Help.H, PS = window.Perso;
   const $ = (s, el = document) => el.querySelector(s);
   const KEY = 'melastro.v1';
-  const VERSION = '1.0.1';
+  const VERSION = '1.1.0';
 
   /* ---------------- État & stockage ---------------- */
   const defaults = { houseSystem: 'placidus', nodeType: 'true', minor: true, skyLines: true, skyNames: true, realistic: false, lastBackup: null };
@@ -160,7 +160,7 @@
     const s = ch.bodies[0], m = ch.bodies[1], a = ch.angles[0];
     const head = `<section class="phead">
       ${avatar(p)}<div class="grow"><h1>${esc(p.name)}</h1><p class="sub">${fmtDate(p.date)}${p.timeUnknown ? ' · heure inconnue' : ' à ' + p.time} · ${esc(p.place.name)} · ${E.formatOffset(ch.offsetMin)} · ${age(p.date)} ans</p>
-      <div class="big3"><div><small>Soleil</small>${sg(s.sign)} ${s.sign.name}</div><div><small>Lune</small>${sg(m.sign)} ${m.sign.name}</div>${p.timeUnknown ? '' : `<div><small>Ascendant</small>${sg(a.sign)} ${a.sign.name}</div>`}</div></div>
+      <div class="big3"><div><small>Soleil ${H('soleil')}</small>${sg(s.sign)} ${s.sign.name}</div><div><small>Lune ${H('lune')}</small>${sg(m.sign)} ${m.sign.name}</div>${p.timeUnknown ? '' : `<div><small>Ascendant ${H('ascendant')}</small>${sg(a.sign)} ${a.sign.name}</div>`}</div></div>
       <div class="pact"><button class="btn sm" data-act="edit" data-id="${p.id}">✎ Modifier</button><a class="btn sm" href="#/synastrie/${p.id}">⚭ Comparer</a></div></section>
       ${ch.ambiguous ? '<div class="notice">⚠️ Cette heure tombe pendant un changement d’heure (heure d’été/hiver). Vérifie le décalage dans les réglages avancés du profil.</div>' : ''}
       ${ch.houseNote ? `<div class="notice">${esc(ch.houseNote)}</div>` : ''}
@@ -174,21 +174,21 @@
     return `<div class="split">
       <div class="card wheelcard">${C.wheel(ch)}
         <div class="legend"><span><i style="background:${C.ASPC.fluide}"></i>Fluide (trigone, sextile)</span><span><i style="background:${C.ASPC.tendu}"></i>Tendu (carré, opposition)</span><span><i style="background:${C.ASPC.neutre}"></i>Conjonction</span></div>
-        <p class="muted small">Maisons ${E.HOUSE_SYSTEMS[ch.houseSystem]} · Survole une planète pour le détail.</p></div>
+        <p class="muted small">Comment lire la roue ${H('roue')} · Maisons ${E.HOUSE_SYSTEMS[ch.houseSystem]} ${H('systemeMaisons')} · Survole une planète pour le détail.</p></div>
       <div class="col">
-        <div class="card"><h3>Les trois piliers</h3>${I.bigThree(ch).map((x) => `<h4>${x.title}</h4><p>${x.txt}</p>`).join('')}</div>
+        <div class="card"><h3>Les trois piliers ${H('theme')}</h3>${PS.bigThree(ch, p.name).map((x) => `<h4>${x.title} ${H(x.help)}</h4><p>${x.txt}</p><p class="theory">${x.theory}</p>`).join('')}</div>
         <div class="card"><h3>En un coup d’œil</h3>
           <dl class="kv">
-            <dt>Élément dominant</dt><dd>${I.elements[st.domEl[0][0]].name}</dd>
-            <dt>Mode dominant</dt><dd>${I.modes[st.domMo[0][0]].name}</dd>
-            <dt>Planète dominante</dt><dd title="${esc(I.dominant[st.ranking[0][0]].txt)}">${E.PMAP[st.ranking[0][0]].glyph}︎ ${E.PMAP[st.ranking[0][0]].name} <span class="muted small">(type ${I.dominant[st.ranking[0][0]].type.toLowerCase()})</span></dd>
-            ${ch.noTime ? '' : `<dt>Maître d’Ascendant</dt><dd>${E.PMAP[ch.angles[0].sign.ruler].name} en ${ch.bodies.find((b) => b.key === ch.angles[0].sign.ruler).sign.name}</dd>`}
-            <dt>Phase lunaire</dt><dd>${C.moonIcon(ch.moonPhase, 22)} ${E.moonPhaseName(ch.moonPhase)}</dd>
-            <dt>Naissance</dt><dd>${ch.diurnal ? '☀️ de jour' : '🌙 de nuit'}</dd>
-            <dt>Rétrogrades</dt><dd>${st.retro.length ? st.retro.map((k) => E.PMAP[k].name).join(', ') : 'aucune'}</dd>
-            <dt>Forme du thème</dt><dd>${st.shape.name}</dd>
+            <dt>Élément dominant ${H('elements')}</dt><dd>${I.elements[st.domEl[0][0]].name}</dd>
+            <dt>Mode dominant ${H('modes')}</dt><dd>${I.modes[st.domMo[0][0]].name}</dd>
+            <dt>Planète dominante ${H('dominantes')}</dt><dd title="${esc(I.dominant[st.ranking[0][0]].txt)}">${E.PMAP[st.ranking[0][0]].glyph}︎ ${E.PMAP[st.ranking[0][0]].name} <span class="muted small">(type ${I.dominant[st.ranking[0][0]].type.toLowerCase()})</span></dd>
+            ${ch.noTime ? '' : `<dt>Maître d’Ascendant ${H('maitreAsc')}</dt><dd>${E.PMAP[ch.angles[0].sign.ruler].name} en ${ch.bodies.find((b) => b.key === ch.angles[0].sign.ruler).sign.name}</dd>`}
+            <dt>Phase lunaire ${H('phase')}</dt><dd>${C.moonIcon(ch.moonPhase, 22)} ${E.moonPhaseName(ch.moonPhase)}</dd>
+            <dt>Naissance ${H('jourNuit')}</dt><dd>${ch.diurnal ? '☀️ de jour' : '🌙 de nuit'}</dd>
+            <dt>Rétrogrades ${H('retro')}</dt><dd>${st.retro.length ? st.retro.map((k) => E.PMAP[k].name).join(', ') : 'aucune'}</dd>
+            <dt>Forme du thème ${H('forme')}</dt><dd>${st.shape.name}</dd>
           </dl></div>
-        ${st.configs.length ? `<div class="card"><h3>Configurations remarquables</h3><ul class="cfg">${st.configs.map((c) => `<li><b>${c.type}</b> — ${esc(c.detail)}</li>`).join('')}</ul></div>` : ''}
+        ${st.configs.length ? `<div class="card"><h3>Configurations remarquables ${H('configurations')}</h3><ul class="cfg">${st.configs.map((c) => `<li><b>${c.type}</b> — ${esc(c.detail)}</li>`).join('')}</ul></div>` : ''}
         ${p.notes ? `<div class="card"><h3>Notes</h3><p class="pre">${esc(p.notes)}</p></div>` : ''}
       </div></div>`;
   }
@@ -196,30 +196,30 @@
   function tabPositions(p, ch) {
     const rows = ch.bodies.map((b) => `<tr><td><span class="pg2">${b.glyph}︎</span> ${b.name}</td><td>${sg(b.sign)} ${b.sign.name}</td><td class="num">${E.fmtDeg(b.lon, false)}</td><td>${b.house ? 'M' + b.house : '—'}</td><td>${b.retro && E.PMAP[b.key].body ? '<span class="retro" title="Rétrograde">℞</span>' : ''}</td><td>${b.dignity ? `<span class="dig ${b.dignity.key}">${b.dignity.label}</span>` : ''}</td><td class="num muted">${b.speed !== undefined ? (b.speed >= 0 ? '+' : '') + b.speed.toFixed(3) + '°/j' : ''}</td></tr>`).join('');
     const ang = ch.noTime ? '' : ch.angles.map((a) => `<tr><td><b>${a.glyph}</b> ${a.name}</td><td>${sg(a.sign)} ${a.sign.name}</td><td class="num">${E.fmtDeg(a.lon, false)}</td><td></td><td></td><td></td><td></td></tr>`).join('');
-    const cusps = ch.noTime ? '<p class="muted">Heure inconnue : les maisons ne peuvent pas être calculées.</p>' : `<table class="tbl"><thead><tr><th>Maison</th><th>Signe</th><th>Cuspide</th><th>Maître</th><th>Domaine</th></tr></thead><tbody>${ch.cusps.map((c, i) => { const s = E.signOf(c); return `<tr><td>${i + 1}</td><td>${sg(s.sign)} ${s.sign.name}</td><td class="num">${E.fmtDeg(c, false)}</td><td>${E.PMAP[s.sign.ruler].name}</td><td class="muted small">${I.houses[i].kw}</td></tr>`; }).join('')}</tbody></table>`;
-    return `<div class="card"><h3>Positions planétaires</h3><div class="scroll"><table class="tbl"><thead><tr><th>Point</th><th>Signe</th><th>Degré</th><th>Maison</th><th>℞</th><th>Dignité</th><th>Vitesse</th></tr></thead><tbody>${rows}${ang}</tbody></table></div>
-      <p class="muted small">Zodiaque tropical, positions géocentriques apparentes. Nœud ${state.settings.nodeType === 'mean' ? 'moyen' : 'vrai'}, Lilith = Lune Noire moyenne. Temps universel : ${new Date(ch.ms).toISOString().replace('T', ' ').slice(0, 16)} UTC · Temps sidéral local : ${hms(ch.lst)} · JJ ${ch.jd.toFixed(5)}</p></div>
-      <div class="card"><h3>Maisons (${E.HOUSE_SYSTEMS[ch.houseSystem]})</h3><div class="scroll">${cusps}</div></div>`;
+    const cusps = ch.noTime ? '<p class="muted">Heure inconnue : les maisons ne peuvent pas être calculées.</p>' : `<table class="tbl"><thead><tr><th>Maison</th><th>Signe</th><th>Cuspide ${H('cuspide')}</th><th>Maître ${H('maitre')}</th><th>Domaine</th></tr></thead><tbody>${ch.cusps.map((c, i) => { const s = E.signOf(c); return `<tr><td>${i + 1}</td><td>${sg(s.sign)} ${s.sign.name}</td><td class="num">${E.fmtDeg(c, false)}</td><td>${E.PMAP[s.sign.ruler].name}</td><td class="muted small">${I.houses[i].kw}</td></tr>`; }).join('')}</tbody></table>`;
+    return `<div class="card"><h3>Positions planétaires ${H('theme')}</h3><div class="scroll"><table class="tbl"><thead><tr><th>Point</th><th>Signe ${H('signes')}</th><th>Degré</th><th>Maison ${H('maisons')}</th><th>℞ ${H('retro')}</th><th>Dignité ${H('dignites')}</th><th>Vitesse ${H('vitesse')}</th></tr></thead><tbody>${rows}${ang}</tbody></table></div>
+      <p class="muted small">Zodiaque tropical ${H('tropical')}, positions géocentriques apparentes. Nœud ${state.settings.nodeType === 'mean' ? 'moyen' : 'vrai'} ${H('noeuds')}, Lilith = Lune Noire moyenne ${H('lilith')}, Part de Fortune ${H('fortune')}. Temps universel : ${new Date(ch.ms).toISOString().replace('T', ' ').slice(0, 16)} UTC · Temps sidéral local ${H('tempsSideral')} : ${hms(ch.lst)} · JJ ${ch.jd.toFixed(5)}</p></div>
+      <div class="card"><h3>Maisons ${H('maisons')} <span class="muted small">${E.HOUSE_SYSTEMS[ch.houseSystem]}</span> ${H('systemeMaisons')}</h3><div class="scroll">${cusps}</div></div>`;
   }
   const hms = (h) => { const H = Math.floor(h), M = Math.floor((h - H) * 60), S = Math.round(((h - H) * 60 - M) * 60); return `${H}h${String(M).padStart(2, '0')}m${String(S).padStart(2, '0')}s`; };
 
   function tabAspects(p, ch) {
     const st = ch.stats; const tot = ch.aspects.length;
     const byType = E.ASPECTS.map((a) => ({ label: a.name, value: ch.aspects.filter((x) => x.key === a.key).length, color: C.ASPC[a.nature], icon: a.glyph })).filter((x) => x.value);
-    return `<div class="split"><div class="card"><h3>Grille des aspects</h3><div class="scroll">${C.aspectGrid(ch)}</div><p class="muted small">Survole une case pour l’orbe exacte. ${state.settings.minor ? 'Aspects mineurs inclus.' : 'Aspects majeurs uniquement.'}</p></div>
-      <div class="col"><div class="card"><h3>Équilibre des aspects</h3>
+    return `<div class="split"><div class="card"><h3>Grille des aspects ${H('grille')}</h3><div class="scroll">${C.aspectGrid(ch)}</div><p class="muted small">Survole une case pour l’orbe exacte. ${state.settings.minor ? 'Aspects mineurs inclus.' : 'Aspects majeurs uniquement.'}</p></div>
+      <div class="col"><div class="card"><h3>Équilibre des aspects ${H('aspects')}</h3>
         ${C.hbars([{ label: 'Fluides', value: st.aspCount.fluide, color: C.ASPC.fluide }, { label: 'Tendus', value: st.aspCount.tendu, color: C.ASPC.tendu }, { label: 'Conjonctions', value: st.aspCount.neutre, color: C.ASPC.neutre }, { label: 'Ajustements / mineurs', value: st.aspCount.autre, color: C.ASPC.ajustement }])}
         <p class="small">${st.aspCount.fluide > st.aspCount.tendu * 1.4 ? 'Thème plutôt harmonieux : les talents circulent facilement, le défi est de ne pas s’endormir sur ses acquis.' : st.aspCount.tendu > st.aspCount.fluide * 1.4 ? 'Thème dynamique et exigeant : beaucoup de tensions qui sont autant de moteurs d’évolution.' : 'Thème équilibré entre facilités et défis.'}</p></div>
-        <div class="card"><h3>Par type (${tot})</h3>${C.hbars(byType)}</div></div></div>
-      <div class="card"><h3>Liste détaillée</h3><ul class="asplist">${ch.aspects.map((a) => `<li><span class="ag" style="color:${C.ASPC[a.nature]}">${a.ag}︎ ${a.glyph} ${a.bg}︎</span><div><b>${a.an} ${a.name.toLowerCase()} ${a.bn}</b> <span class="muted">orbe ${a.orb.toFixed(2)}°${a.applying === true ? ' · appliquant' : a.applying === false ? ' · séparant' : ''}</span><br><span class="small">${I.aspectText(a)}</span></div></li>`).join('')}</ul></div>`;
+        <div class="card"><h3>Par type (${tot}) ${H('mineurs')}</h3>${C.hbars(byType)}</div></div></div>
+      <div class="card"><h3>Liste détaillée ${H('orbe')} ${H('appliquant')}</h3><ul class="asplist">${ch.aspects.map((a) => `<li><span class="ag" style="color:${C.ASPC[a.nature]}">${a.ag}︎ ${a.glyph} ${a.bg}︎</span><div><b>${a.an} ${a.name.toLowerCase()} ${a.bn}</b> <span class="muted">orbe ${a.orb.toFixed(2)}°${a.applying === true ? ' · appliquant' : a.applying === false ? ' · séparant' : ''}</span><br><span class="small">${PS.aspectReading(a, p.name)}</span><span class="theory small">${I.aspectText(a)}</span></div></li>`).join('')}</ul></div>`;
   }
 
   function tabLecture(p, ch) {
     const main = ch.bodies;
-    return `<div class="card"><h3>Synthèse</h3><p>${I.elementSummary(ch.stats)}</p><p>${I.moonPhases[E.moonPhaseName(ch.moonPhase)]}</p><p><b>Forme ${ch.stats.shape.name}</b> : ${ch.stats.shape.desc}</p></div>
-      <div class="card"><h3>Planète par planète</h3>${main.map((b) => `<div class="lec"><div class="lec-g" style="color:${C.ELC[b.sign.element]}">${b.glyph}︎</div><div><h4>${b.name} en ${b.sign.name}${b.house ? ', maison ' + b.house : ''}</h4><p>${I.planetText(b, ch.noTime)}</p></div></div>`).join('')}</div>
-      ${ch.noTime ? '' : `<div class="card"><h3>Les maisons habitées</h3>${I.houses.map((h, i) => { const occ = main.filter((b) => b.house === i + 1 && E.PMAP[b.key].body); return occ.length ? `<p><b>${h.name}</b> (${h.kw}) : ${occ.map((b) => b.name).join(', ')}.</p>` : ''; }).join('')}<p class="muted small">Les maisons vides ne sont pas « inactives » : elles s’expriment à travers leur maître et le signe de leur cuspide.</p></div>`}
-      <div class="card"><h3>Aspects majeurs</h3>${ch.aspects.filter((a) => a.major).slice(0, 14).map((a) => `<p><b style="color:${C.ASPC[a.nature]}">${a.glyph}</b> ${I.aspectText(a)}</p>`).join('')}</div>`;
+    return `<div class="card"><h3>Synthèse ${H('elements')}</h3><p>${I.elementSummary(ch.stats)}</p><p>${I.moonPhases[E.moonPhaseName(ch.moonPhase)]}</p><p><b>Forme ${ch.stats.shape.name}</b> : ${ch.stats.shape.desc}</p></div>
+      <div class="card"><h3>Planète par planète ${H('signes')}</h3>${main.map((b) => `<div class="lec"><div class="lec-g" style="color:${C.ELC[b.sign.element]}">${b.glyph}︎</div><div><h4>${b.name} en ${b.sign.name}${b.house ? ', maison ' + b.house : ''} ${H({ sun: 'soleil', moon: 'lune', node: 'noeuds', snode: 'noeuds', lilith: 'lilith', fortune: 'fortune' }[b.key] || '')}${b.dignity ? ' ' + H('dignites') : ''}</h4>${((r) => `<p>${r.perso}</p><p class="theory">${r.theory}</p>`)(PS.planetReading(b, ch, p.name))}</div></div>`).join('')}</div>
+      ${ch.noTime ? '' : `<div class="card"><h3>Les maisons habitées ${H('maisons')}</h3>${I.houses.map((h, i) => { const occ = main.filter((b) => b.house === i + 1 && E.PMAP[b.key].body); return occ.length ? `<p><b>${h.name}</b> (${h.kw}) : ${occ.map((b) => b.name).join(', ')}.</p>` : ''; }).join('')}<p class="muted small">Les maisons vides ne sont pas « inactives » : elles s’expriment à travers leur maître et le signe de leur cuspide.</p></div>`}
+      <div class="card"><h3>Aspects majeurs ${H('aspects')}</h3>${ch.aspects.filter((a) => a.major).slice(0, 14).map((a) => `<p><b style="color:${C.ASPC[a.nature]}">${a.glyph}</b> <b>${a.an} ${a.name.toLowerCase()} ${a.bn}</b> — ${PS.aspectReading(a, p.name)}</p><p class="theory">${I.aspectText(a)}</p>`).join('')}</div>`;
   }
 
   function tabDominantes(p, ch) {
@@ -228,14 +228,14 @@
     const moTot = Object.values(st.mo).reduce((a, b) => a + b, 0);
     const pr = st.ranking.slice(0, 10).map(([k, v]) => ({ label: E.PMAP[k].name, value: v, icon: E.PMAP[k].glyph + '︎', color: 'var(--accent)' }));
     return `<div class="grid2">
-      <div class="card"><h3>Éléments</h3>${C.hbars(['feu', 'terre', 'air', 'eau'].map((e) => ({ label: I.elements[e].name, value: pct(st.el[e], elTot), color: C.ELC[e], title: I.elements[e].name + ' : ' + I.elements[e].txt })), { max: 100, fmt: (v) => v + ' %' })}<p class="small">${I.elementSummary(st)}</p></div>
-      <div class="card"><h3>Modes</h3>${C.hbars(['cardinal', 'fixe', 'mutable'].map((m) => ({ label: I.modes[m].name, value: pct(st.mo[m], moTot), color: 'var(--accent)', title: I.modes[m].txt })), { max: 100, fmt: (v) => v + ' %' })}
-        <h3 style="margin-top:1rem">Polarité</h3>${C.hbars([{ label: 'Yang (feu, air)', value: pct(st.pol['+'], elTot), color: 'var(--gold)' }, { label: 'Yin (terre, eau)', value: pct(st.pol['-'], elTot), color: 'var(--accent)' }], { max: 100, fmt: (v) => v + ' %' })}</div>
-      <div class="card"><h3>Planètes dominantes</h3>${C.hbars(pr)}<p class="muted small">Score combinant angularité, maîtrises (Ascendant, MC, luminaires), dignités et nombre d’aspects.</p></div>
-      <div class="card span2"><h3>Interprétation des dominantes</h3>${st.ranking.slice(0, 3).map(([k, v], i) => { const d = I.dominant[k], b = ch.bodies.find((x) => x.key === k); return `<div class="lec"><div class="lec-g" style="color:var(--gold)">${E.PMAP[k].glyph}\uFE0E</div><div><h4>${i === 0 ? 'Planète dominante' : i === 1 ? 'Deuxième dominante' : 'Troisième dominante'} : ${E.PMAP[k].name} <span class="muted small">(type ${d.type.toLowerCase()} · score ${v})</span></h4><p>${d.txt}</p><p class="small">${E.PMAP[k].name} en ${b.sign.name}${b.house ? ', maison ' + b.house : ''} : cette énergie s’exprime de manière ${I.signs[b.sign.key].adj}${b.house ? ', surtout dans ' + I.houses[b.house - 1].kw : ''}.</p><p class="small muted">Pourquoi elle domine : ${domReasons(ch, b).join(' · ')}</p></div></div>`; }).join('')}</div>
-      ${ch.noTime ? '' : `<div class="card"><h3>Hémisphères</h3>${C.hbars([{ label: 'Est — affirmation de soi', value: pct(st.hemi.est, st.hemi.est + st.hemi.ouest), color: 'var(--gold)' }, { label: 'Ouest — tourné vers l’autre', value: pct(st.hemi.ouest, st.hemi.est + st.hemi.ouest), color: 'var(--accent)' }, { label: 'Sud — vie publique', value: pct(st.hemi.sud, st.hemi.nord + st.hemi.sud), color: 'var(--gold)' }, { label: 'Nord — vie intime', value: pct(st.hemi.nord, st.hemi.nord + st.hemi.sud), color: 'var(--accent)' }], { max: 100, fmt: (v) => v + ' %' })}</div>`}
-      <div class="card span2"><h3>Poids par signe</h3>${C.signColumns(st.signScore.map((v) => Math.round(v * 10) / 10), { label: 'Poids par signe' })}</div>
-      ${ch.noTime ? '' : `<div class="card span2"><h3>Poids par maison</h3>${C.hbars(st.houseScore.map((v, i) => ({ label: I.houses[i].name, value: Math.round(v * 10) / 10, color: 'var(--accent)', title: I.houses[i].kw })))}</div>`}
+      <div class="card"><h3>Éléments ${H('elements')}</h3>${C.hbars(['feu', 'terre', 'air', 'eau'].map((e) => ({ label: I.elements[e].name, value: pct(st.el[e], elTot), color: C.ELC[e], title: I.elements[e].name + ' : ' + I.elements[e].txt })), { max: 100, fmt: (v) => v + ' %' })}<p class="small">${I.elementSummary(st)}</p></div>
+      <div class="card"><h3>Modes ${H('modes')}</h3>${C.hbars(['cardinal', 'fixe', 'mutable'].map((m) => ({ label: I.modes[m].name, value: pct(st.mo[m], moTot), color: 'var(--accent)', title: I.modes[m].txt })), { max: 100, fmt: (v) => v + ' %' })}
+        <h3 style="margin-top:1rem">Polarité ${H('polarite')}</h3>${C.hbars([{ label: 'Yang (feu, air)', value: pct(st.pol['+'], elTot), color: 'var(--gold)' }, { label: 'Yin (terre, eau)', value: pct(st.pol['-'], elTot), color: 'var(--accent)' }], { max: 100, fmt: (v) => v + ' %' })}</div>
+      <div class="card"><h3>Planètes dominantes ${H('dominantes')}</h3>${C.hbars(pr)}<p class="muted small">Score combinant angularité, maîtrises (Ascendant, MC, luminaires), dignités et nombre d’aspects.</p></div>
+      <div class="card span2"><h3>Interprétation des dominantes ${H('dominantes')}</h3>${st.ranking.slice(0, 3).map(([k, v], i) => { const d = I.dominant[k], b = ch.bodies.find((x) => x.key === k); return `<div class="lec"><div class="lec-g" style="color:var(--gold)">${E.PMAP[k].glyph}\uFE0E</div><div><h4>${i === 0 ? 'Planète dominante' : i === 1 ? 'Deuxième dominante' : 'Troisième dominante'} : ${E.PMAP[k].name} <span class="muted small">(type ${d.type.toLowerCase()} · score ${v})</span></h4><p>${d.txt}</p><p class="small">${E.PMAP[k].name} en ${b.sign.name}${b.house ? ', maison ' + b.house : ''} : cette énergie s’exprime de manière ${I.signs[b.sign.key].adj}${b.house ? ', surtout dans ' + I.houses[b.house - 1].kw : ''}.</p><p class="small muted">Pourquoi elle domine : ${domReasons(ch, b).join(' · ')}</p></div></div>`; }).join('')}</div>
+      ${ch.noTime ? '' : `<div class="card"><h3>Hémisphères ${H('hemispheres')}</h3>${C.hbars([{ label: 'Est — affirmation de soi', value: pct(st.hemi.est, st.hemi.est + st.hemi.ouest), color: 'var(--gold)' }, { label: 'Ouest — tourné vers l’autre', value: pct(st.hemi.ouest, st.hemi.est + st.hemi.ouest), color: 'var(--accent)' }, { label: 'Sud — vie publique', value: pct(st.hemi.sud, st.hemi.nord + st.hemi.sud), color: 'var(--gold)' }, { label: 'Nord — vie intime', value: pct(st.hemi.nord, st.hemi.nord + st.hemi.sud), color: 'var(--accent)' }], { max: 100, fmt: (v) => v + ' %' })}</div>`}
+      <div class="card span2"><h3>Poids par signe ${H('signes')}</h3>${C.signColumns(st.signScore.map((v) => Math.round(v * 10) / 10), { label: 'Poids par signe' })}</div>
+      ${ch.noTime ? '' : `<div class="card span2"><h3>Poids par maison ${H('maisons')}</h3>${C.hbars(st.houseScore.map((v, i) => ({ label: I.houses[i].name, value: Math.round(v * 10) / 10, color: 'var(--accent)', title: I.houses[i].kw })))}</div>`}
     </div>`;
   }
 
@@ -262,11 +262,11 @@
     const sm = C.skyMap(view, { lines: state.settings.skyLines, names: state.settings.skyNames, realistic: state.settings.realistic });
     const dayNote = sm.sunAlt > 0 ? '☀️ Le Soleil était levé : ces étoiles étaient là, mais invisibles dans la lumière du jour.' : sm.sunAlt > -12 ? '🌆 Crépuscule : seules les étoiles les plus brillantes étaient visibles.' : '🌌 Nuit noire : le ciel était tel que dessiné ici.';
     return `<div class="split"><div class="card skycard">${sm.svg}</div>
-      <div class="col"><div class="card"><h3>Le ciel au-dessus de ${esc(p.place.name.split(' (')[0])}</h3><p>${fmtDT(ch.ms, p.place.tz)}</p><p>${dayNote}</p><p class="small muted">Vue en levant la tête : zénith au centre, horizon sur le bord, Nord en haut, Est à gauche. La ligne pointillée dorée est l’écliptique, sur laquelle se trouvent le Soleil, la Lune et les planètes.</p>
+      <div class="col"><div class="card"><h3>${H('ciel')} Le ciel au-dessus de ${esc(p.place.name.split(' (')[0])}</h3><p>${fmtDT(ch.ms, p.place.tz)}</p><p>${dayNote}</p><p class="small muted">Vue en levant la tête : zénith au centre, horizon sur le bord, Nord en haut, Est à gauche. La ligne pointillée dorée est l’écliptique ${H('ecliptique')}, sur laquelle se trouvent le Soleil, la Lune et les planètes.</p>
         ${sm.below ? `<p class="small"><b>Sous l’horizon :</b> ${sm.below}</p>` : ''}
         <div class="row wrap"><label class="chk"><input type="checkbox" id="skl" ${state.settings.skyLines ? 'checked' : ''}> Lignes des constellations</label><label class="chk"><input type="checkbox" id="skn" ${state.settings.skyNames ? 'checked' : ''}> Noms</label><label class="chk"><input type="checkbox" id="skr" ${state.settings.realistic ? 'checked' : ''}> Luminosité réaliste</label></div></div>
-        <div class="card"><h3>Planètes visibles</h3><ul class="plist">${view.planets.map((pl) => `<li class="${pl.alt < 0 ? 'muted' : ''}">${pl.glyph}︎ <b>${pl.name}</b> — ${pl.alt >= 0 ? `hauteur ${pl.alt.toFixed(0)}°, direction ${azName(pl.az)}` : 'sous l’horizon'}${pl.mag !== null && pl.alt >= 0 && pl.key !== 'sun' ? ` · mag. ${pl.mag.toFixed(1)}` : ''}</li>`).join('')}</ul></div>
-        <div class="card"><h3>Lune de naissance</h3><div class="row">${C.moonIcon(ch.moonPhase, 64)}<div><b>${E.moonPhaseName(ch.moonPhase)}</b><br><span class="small">${I.moonPhases[E.moonPhaseName(ch.moonPhase)]}</span></div></div></div>
+        <div class="card"><h3>Planètes visibles ${H('magnitude')}</h3><ul class="plist">${view.planets.map((pl) => `<li class="${pl.alt < 0 ? 'muted' : ''}">${pl.glyph}︎ <b>${pl.name}</b> — ${pl.alt >= 0 ? `hauteur ${pl.alt.toFixed(0)}°, direction ${azName(pl.az)}` : 'sous l’horizon'}${pl.mag !== null && pl.alt >= 0 && pl.key !== 'sun' ? ` · mag. ${pl.mag.toFixed(1)}` : ''}</li>`).join('')}</ul></div>
+        <div class="card"><h3>Lune de naissance ${H('phase')}</h3><div class="row">${C.moonIcon(ch.moonPhase, 64)}<div><b>${E.moonPhaseName(ch.moonPhase)}</b><br><span class="small">${I.moonPhases[E.moonPhaseName(ch.moonPhase)]}</span></div></div></div>
       </div></div>`;
   }
   const azName = (az) => ['Nord', 'Nord-Est', 'Est', 'Sud-Est', 'Sud', 'Sud-Ouest', 'Ouest', 'Nord-Ouest'][Math.round(az / 45) % 8];
@@ -285,8 +285,8 @@
     const li = (a) => `<li><span class="ag" style="color:${C.ASPC[a.nature]}">${a.ag}︎ ${a.glyph} ${a.bg}︎</span><div>${I.transitText(a)}${a.transitHouse ? ` <span class="muted small">(transite votre maison ${a.transitHouse})</span>` : ''}</div></li>`;
     return `<div class="toolbar"><label>Date des transits <input type="date" id="trdate" value="${ds}"></label><a class="btn sm" href="#/profil/${p.id}/transits">Aujourd’hui</a></div>
       <div class="split"><div class="card wheelcard">${C.wheel(ch, { outer: tr.chart, aspects: tr.aspects })}<p class="muted small">Intérieur : thème natal · extérieur : ciel du ${fmtDate(ds)}.</p></div>
-      <div class="col"><div class="card"><h3>Grandes tendances (planètes lentes)</h3>${slow.length ? `<ul class="asplist">${slow.map(li).join('')}</ul>` : '<p class="muted">Aucun transit lent serré en ce moment.</p>'}</div>
-      <div class="card"><h3>Climat du moment (planètes rapides)</h3>${fast.length ? `<ul class="asplist">${fast.map(li).join('')}</ul>` : '<p class="muted">Rien de marquant.</p>'}</div></div></div>`;
+      <div class="col"><div class="card"><h3>Grandes tendances (planètes lentes) ${H('lentes')}</h3>${slow.length ? `<ul class="asplist">${slow.map(li).join('')}</ul>` : '<p class="muted">Aucun transit lent serré en ce moment.</p>'}</div>
+      <div class="card"><h3>Climat du moment (planètes rapides) ${H('transits')}</h3>${fast.length ? `<ul class="asplist">${fast.map(li).join('')}</ul>` : '<p class="muted">Rien de marquant.</p>'}</div></div></div>`;
   }
 
   function tabRevolution(p, ch, yearStr) {
@@ -299,7 +299,7 @@
     const years = []; const by = +p.date.slice(0, 4); for (let k = Math.max(by, y - 10); k <= y + 10; k++) years.push(k);
     return `<div class="toolbar"><label>Année <select id="sry">${years.map((k) => `<option ${k === y ? 'selected' : ''}>${k}</option>`).join('')}</select></label><span class="muted small">Calculée pour le lieu de naissance.</span></div>
       <div class="split"><div class="card wheelcard">${C.wheel(src)}</div>
-      <div class="col"><div class="card"><h3>Révolution solaire ${y}</h3><p>Retour exact du Soleil à ${E.fmtDeg(ch.bodies[0].lon)} le <b>${fmtDT(sr.ms, p.place.tz)}</b>.</p>
+      <div class="col"><div class="card"><h3>Révolution solaire ${y} ${H('revolution')}</h3><p>Retour exact du Soleil à ${E.fmtDeg(ch.bodies[0].lon)} le <b>${fmtDT(sr.ms, p.place.tz)}</b>.</p>
       <dl class="kv"><dt>Ascendant de l’année</dt><dd>${sg(asc.sign)} ${asc.sign.name}</dd><dt>Soleil en maison</dt><dd>${sun.house}</dd><dt>Lune</dt><dd>${sg(moon.sign)} ${moon.sign.name}, maison ${moon.house}</dd></dl>
       <p><b>Thème de l’année :</b> le Soleil en maison ${sun.house} met l’accent sur ${I.houses[sun.house - 1].kw}. La Lune en maison ${moon.house} indique que les besoins émotionnels se porteront sur ${I.houses[moon.house - 1].kw}. L’Ascendant ${asc.sign.name} donne une tonalité ${I.signs[asc.sign.key].adj} à l’année.</p></div>
       <div class="card"><h3>Positions de l’année</h3><table class="tbl"><tbody>${b.filter((x) => E.PMAP[x.key].body).map((x) => `<tr><td>${x.glyph}︎ ${x.name}</td><td>${sg(x.sign)} ${E.fmtDeg(x.lon, false)}</td><td>M${x.house}</td></tr>`).join('')}</tbody></table></div></div></div>`;
@@ -310,7 +310,7 @@
     const P = state.profiles;
     if (P.length < 2) return `<div class="card"><h2>Synastrie</h2><p>Il faut au moins deux profils dans le carnet pour les comparer.</p><button class="btn primary" data-act="new">Ajouter un profil</button></div>`;
     const opt = (sel) => P.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr')).map((p) => `<option value="${p.id}" ${p.id === sel ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
-    const sel = `<section class="hero"><div><h1>Synastrie</h1><p class="sub">Comparer deux thèmes : compatibilité, aspects croisés, maisons, thème composite.</p></div></section>
+    const sel = `<section class="hero"><div><h1>Synastrie ${H('synastrie')}</h1><p class="sub">Comparer deux thèmes : compatibilité, aspects croisés, maisons, thème composite.</p></div></section>
       <div class="toolbar syn"><select id="s1"><option value="">— Profil 1 —</option>${opt(id1)}</select><span class="amp">⚭</span><select id="s2"><option value="">— Profil 2 —</option>${opt(id2)}</select></div>`;
     const p1 = getP(id1), p2 = getP(id2);
     if (!p1 || !p2 || p1 === p2) return sel + '<div class="card muted">Choisis deux profils différents.</div>';
@@ -323,13 +323,13 @@
     return sel + `<div class="split">
       <div class="card wheelcard">${C.wheel(c2, { outer: c1, aspects: syn.aspects })}<p class="muted small">Intérieur : ${n2} · extérieur : ${n1}.</p></div>
       <div class="col">
-        <div class="card score"><div class="ring" style="--v:${syn.score}"><span>${syn.score}</span><small>/100</small></div><div><h3>${n1} & ${n2}</h3><p>${syn.score >= 75 ? 'Une belle affinité : beaucoup d’échanges fluides entre vos thèmes.' : syn.score >= 55 ? 'Une relation équilibrée, entre complicité et défis stimulants.' : syn.score >= 40 ? 'Une relation qui demande des ajustements, mais riche d’apprentissages.' : 'Des énergies contrastées : la relation sera intense et formatrice.'}</p><p class="muted small">${syn.aspects.filter((a) => a.nature === 'fluide').length} aspects fluides · ${syn.aspects.filter((a) => a.nature === 'tendu').length} tendus · ${syn.aspects.filter((a) => a.key === 'conj').length} conjonctions</p></div></div>
+        <div class="card score"><div class="ring" style="--v:${syn.score}"><span>${syn.score}</span><small>/100</small></div><div><h3>${n1} & ${n2} ${H('score')}</h3><p>${syn.score >= 75 ? 'Une belle affinité : beaucoup d’échanges fluides entre vos thèmes.' : syn.score >= 55 ? 'Une relation équilibrée, entre complicité et défis stimulants.' : syn.score >= 40 ? 'Une relation qui demande des ajustements, mais riche d’apprentissages.' : 'Des énergies contrastées : la relation sera intense et formatrice.'}</p><p class="muted small">${syn.aspects.filter((a) => a.nature === 'fluide').length} aspects fluides · ${syn.aspects.filter((a) => a.nature === 'tendu').length} tendus · ${syn.aspects.filter((a) => a.key === 'conj').length} conjonctions</p></div></div>
         <div class="card"><h3>Par domaine</h3>${C.hbars(Object.entries(syn.domains).map(([k, v]) => ({ label: dl[k], value: v, color: 'var(--accent)' })), { max: 100, fmt: (v) => v + ' %' })}</div>
-        <div class="card"><h3>Éléments croisés</h3><dl class="kv"><dt>Soleil ↔ Soleil</dt><dd>${c1.bodies[0].sign.name} / ${c2.bodies[0].sign.name} — ${syn.sunMoon.sun}</dd><dt>Lune ↔ Lune</dt><dd>${c1.bodies[1].sign.name} / ${c2.bodies[1].sign.name} — ${syn.sunMoon.moon}</dd><dt>Vénus de ${n1} ↔ Mars de ${n2}</dt><dd>${syn.sunMoon.venusMars}</dd><dt>Mars de ${n1} ↔ Vénus de ${n2}</dt><dd>${syn.sunMoon.marsVenus}</dd></dl></div>
+        <div class="card"><h3>Éléments croisés ${H('elementsCroises')}</h3><dl class="kv"><dt>Soleil ↔ Soleil</dt><dd>${c1.bodies[0].sign.name} / ${c2.bodies[0].sign.name} — ${syn.sunMoon.sun}</dd><dt>Lune ↔ Lune</dt><dd>${c1.bodies[1].sign.name} / ${c2.bodies[1].sign.name} — ${syn.sunMoon.moon}</dd><dt>Vénus de ${n1} ↔ Mars de ${n2}</dt><dd>${syn.sunMoon.venusMars}</dd><dt>Mars de ${n1} ↔ Vénus de ${n2}</dt><dd>${syn.sunMoon.marsVenus}</dd></dl></div>
       </div></div>
-      <div class="card"><h3>Aspects croisés principaux</h3><ul class="asplist">${top.map((a) => `<li><span class="ag" style="color:${C.ASPC[a.nature]}">${a.ag}︎ ${a.glyph} ${a.bg}︎</span><div>${I.synText(a, n1, n2)} <span class="muted small">orbe ${a.orb.toFixed(1)}°</span></div></li>`).join('')}</ul></div>
-      <div class="grid2"><div class="card"><h3>Planètes de ${n2} dans les maisons de ${n1}</h3>${ov(syn.overlay, n2, n1)}</div><div class="card"><h3>Planètes de ${n1} dans les maisons de ${n2}</h3>${ov(syn.overlay2, n1, n2)}</div></div>
-      <div class="card"><h3>Thème composite (points médians)</h3><p class="small muted">Le composite décrit la relation elle-même comme une entité.</p><div class="chips">${syn.composite.filter((b) => E.PMAP[b.key].body).map((b) => `<span class="chip">${b.glyph}︎ ${b.name} ${sg(b.sign)} ${E.fmtDeg(b.lon, false)}</span>`).join('')}</div>
+      <div class="card"><h3>Aspects croisés principaux ${H('aspects')}</h3><ul class="asplist">${top.map((a) => `<li><span class="ag" style="color:${C.ASPC[a.nature]}">${a.ag}︎ ${a.glyph} ${a.bg}︎</span><div>${I.synText(a, n1, n2)} <span class="muted small">orbe ${a.orb.toFixed(1)}°</span></div></li>`).join('')}</ul></div>
+      <div class="grid2"><div class="card"><h3>Planètes de ${n2} dans les maisons de ${n1} ${H('superposition')}</h3>${ov(syn.overlay, n2, n1)}</div><div class="card"><h3>Planètes de ${n1} dans les maisons de ${n2}</h3>${ov(syn.overlay2, n1, n2)}</div></div>
+      <div class="card"><h3>Thème composite ${H('composite')}</h3><p class="small muted">Le composite décrit la relation elle-même comme une entité.</p><div class="chips">${syn.composite.filter((b) => E.PMAP[b.key].body).map((b) => `<span class="chip">${b.glyph}︎ ${b.name} ${sg(b.sign)} ${E.fmtDeg(b.lon, false)}</span>`).join('')}</div>
       <p>Soleil composite en <b>${syn.composite[0].sign.name}</b> : la relation se vit sur un mode ${I.signs[syn.composite[0].sign.key].adj}. Vénus composite en <b>${syn.composite[3].sign.name}</b> : l’affection s’exprime de façon ${I.signs[syn.composite[3].sign.key].adj}.</p></div>`;
   }
   afterRender.synastrie = (a, b) => { const s1 = $('#s1'), s2 = $('#s2'); if (!s1) return; const go = () => (location.hash = `#/synastrie/${s1.value}/${s2.value}`); s1.onchange = go; s2.onchange = go; void a; void b; };
@@ -354,11 +354,11 @@
     const P = state.profiles;
     return `<section class="hero"><div><h1>Le ciel aujourd’hui</h1><p class="sub">${new Date(now).toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' })}</p></div></section>
       <div class="split"><div class="col">
-        <div class="card"><h3>Positions du jour</h3><table class="tbl"><tbody>${ch.bodies.filter((b) => b.key !== 'fortune').map((b) => `<tr><td>${b.glyph}︎ ${b.name}</td><td>${sg(b.sign)} ${b.sign.name}</td><td class="num">${E.fmtDeg(b.lon, false)}</td><td>${b.retro && E.PMAP[b.key].body ? '<span class="retro">℞ rétrograde</span>' : ''}</td></tr>`).join('')}</tbody></table></div>
-        <div class="card"><h3>Lune</h3><div class="row">${C.moonIcon(ch.moonPhase, 64)}<div><b>${E.moonPhaseName(ch.moonPhase)}</b> en ${ch.bodies[1].sign.name}<br><span class="small muted">${Math.round((1 - Math.cos(ch.moonPhase * Math.PI / 180)) * 50)} % éclairée</span></div></div>
+        <div class="card"><h3>Positions du jour ${H('retro')}</h3><table class="tbl"><tbody>${ch.bodies.filter((b) => b.key !== 'fortune').map((b) => `<tr><td>${b.glyph}︎ ${b.name}</td><td>${sg(b.sign)} ${b.sign.name}</td><td class="num">${E.fmtDeg(b.lon, false)}</td><td>${b.retro && E.PMAP[b.key].body ? '<span class="retro">℞ rétrograde</span>' : ''}</td></tr>`).join('')}</tbody></table></div>
+        <div class="card"><h3>Lune ${H('lunePhases')}</h3><div class="row">${C.moonIcon(ch.moonPhase, 64)}<div><b>${E.moonPhaseName(ch.moonPhase)}</b> en ${ch.bodies[1].sign.name}<br><span class="small muted">${Math.round((1 - Math.cos(ch.moonPhase * Math.PI / 180)) * 50)} % éclairée</span></div></div>
           <ul class="plist">${nextPh.map(([d, nm, ph]) => `<li>${C.moonIcon(ph, 18)} ${nm} — ${d.toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })} en ${E.signOf(E.calcChart({ ms: d.getTime(), lat: 0, lon: 0, noTime: true }).bodies[1].lon).sign.name}</li>`).join('')}</ul></div>
-        <div class="card"><h3>Prochains changements de signe</h3><ul class="plist">${ingress.map((x) => `<li>${x.b.glyph}︎ ${x.b.name} entre en ${sg(x.sign)} ${x.sign.name} vers le ${new Date(x.when).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</li>`).join('')}</ul></div>
-        ${P.length ? `<div class="card"><h3>Transits du jour pour…</h3><div class="chips">${P.map((p) => `<a class="chip" href="#/profil/${p.id}/transits">${esc(p.name)}</a>`).join('')}</div></div>` : ''}
+        <div class="card"><h3>Prochains changements de signe ${H('ingress')}</h3><ul class="plist">${ingress.map((x) => `<li>${x.b.glyph}︎ ${x.b.name} entre en ${sg(x.sign)} ${x.sign.name} vers le ${new Date(x.when).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</li>`).join('')}</ul></div>
+        ${P.length ? `<div class="card"><h3>Transits du jour pour… ${H('transits')}</h3><div class="chips">${P.map((p) => `<a class="chip" href="#/profil/${p.id}/transits">${esc(p.name)}</a>`).join('')}</div></div>` : ''}
       </div>
       <div class="card skycard">${sm.svg}<p class="muted small">Ciel actuel au-dessus de ${esc(loc.name)}. ${sm.below ? 'Sous l’horizon : ' + sm.below : ''}</p></div></div>`;
   }
@@ -382,7 +382,7 @@
     if (P.length >= 2 && P.length <= 60) { for (let i = 0; i < charts.length; i++) for (let j = i + 1; j < charts.length; j++) pairs.push({ a: charts[i].p, b: charts[j].p, s: E.synastry(charts[i].ch, charts[j].ch).score }); pairs.sort((x, y) => y.s - x.s); }
     const decade = {}; P.forEach((p) => { const d = Math.floor(+p.date.slice(0, 4) / 10) * 10; decade[d] = (decade[d] || 0) + 1; });
     const n = P.length;
-    return `<section class="hero"><div><h1>Statistiques du carnet</h1><p class="sub">${n} profil${n > 1 ? 's' : ''} analysé${n > 1 ? 's' : ''}</p></div></section>
+    return `<section class="hero"><div><h1>Statistiques du carnet ${H('stats')}</h1><p class="sub">${n} profil${n > 1 ? 's' : ''} analysé${n > 1 ? 's' : ''}</p></div></section>
       <div class="tiles"><div class="tile"><small>Signe solaire le plus fréquent</small><b>${E.SIGNS[sun.indexOf(Math.max(...sun))].name}</b></div><div class="tile"><small>Élément dominant du carnet</small><b>${I.elements[Object.entries(el).sort((a, b) => b[1] - a[1])[0][0]].name}</b></div><div class="tile"><small>Planète dominante la plus fréquente</small><b>${E.PMAP[Object.entries(domPl).sort((a, b) => b[1] - a[1])[0][0]].name}</b></div><div class="tile"><small>Profils sans heure</small><b>${P.filter((p) => p.timeUnknown).length}</b></div></div>
       <div class="grid2">
         <div class="card span2"><h3>Signes solaires</h3>${C.signColumns(sun, { label: 'Signes solaires' })}</div>
@@ -391,7 +391,7 @@
         <div class="card"><h3>Vénus</h3>${C.signColumns(venus, { label: 'Vénus' })}</div>
         <div class="card"><h3>Répartition moyenne des éléments</h3>${C.hbars(['feu', 'terre', 'air', 'eau'].map((e) => ({ label: I.elements[e].name, value: Math.round((el[e] / n) * 100), color: C.ELC[e] })), { max: 100, fmt: (v) => v + ' %' })}<h4>Élément dominant par profil</h4>${C.hbars(['feu', 'terre', 'air', 'eau'].map((e) => ({ label: I.elements[e].name, value: domEl[e], color: C.ELC[e] })))}</div>
         <div class="card"><h3>Planètes dominantes</h3>${C.hbars(Object.entries(domPl).sort((a, b) => b[1] - a[1]).map(([k, v]) => ({ label: E.PMAP[k].name, value: v, icon: E.PMAP[k].glyph + '︎', color: 'var(--accent)' })))}</div>
-        <div class="card"><h3>Aspects majeurs</h3>${C.hbars(E.ASPECTS.filter((a) => a.major).map((a) => ({ label: a.name, value: aspT[a.key] || 0, icon: a.glyph, color: C.ASPC[a.nature] })))}</div>
+        <div class="card"><h3>Aspects majeurs ${H('aspects')}</h3>${C.hbars(E.ASPECTS.filter((a) => a.major).map((a) => ({ label: a.name, value: aspT[a.key] || 0, icon: a.glyph, color: C.ASPC[a.nature] })))}</div>
         <div class="card"><h3>Planètes rétrogrades à la naissance</h3>${Object.keys(ret).length ? C.hbars(Object.entries(ret).sort((a, b) => b[1] - a[1]).map(([k, v]) => ({ label: E.PMAP[k].name, value: v, icon: E.PMAP[k].glyph + '︎', color: 'var(--accent)' }))) : '<p class="muted">Aucune.</p>'}</div>
         <div class="card"><h3>Phases lunaires de naissance</h3>${C.hbars(Object.entries(ph).sort((a, b) => b[1] - a[1]).map(([k, v]) => ({ label: k, value: v, color: 'var(--gold)' })))}</div>
         <div class="card"><h3>Décennies de naissance</h3>${C.hbars(Object.entries(decade).sort().map(([k, v]) => ({ label: 'Années ' + k, value: v, color: 'var(--accent)' })))}</div>
@@ -405,9 +405,9 @@
     const s = state.settings;
     return `<section class="hero"><div><h1>Réglages</h1><p class="sub">Mélastro v${VERSION}</p></div></section>
       <div class="grid2"><div class="card"><h3>Calculs</h3>
-        <label>Système de maisons<select id="hs">${Object.entries(E.HOUSE_SYSTEMS).map(([k, v]) => `<option value="${k}" ${k === s.houseSystem ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
-        <label>Nœuds lunaires<select id="nt"><option value="true" ${s.nodeType !== 'mean' ? 'selected' : ''}>Nœud vrai</option><option value="mean" ${s.nodeType === 'mean' ? 'selected' : ''}>Nœud moyen</option></select></label>
-        <label class="chk"><input type="checkbox" id="mi" ${s.minor ? 'checked' : ''}> Afficher les aspects mineurs (quinconce, semi-sextile, semi-carré, sesqui-carré)</label>
+        <label>Système de maisons ${H('systemeMaisons')}<select id="hs">${Object.entries(E.HOUSE_SYSTEMS).map(([k, v]) => `<option value="${k}" ${k === s.houseSystem ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
+        <label>Nœuds lunaires ${H('noeudType')}<select id="nt"><option value="true" ${s.nodeType !== 'mean' ? 'selected' : ''}>Nœud vrai</option><option value="mean" ${s.nodeType === 'mean' ? 'selected' : ''}>Nœud moyen</option></select></label>
+        <label class="chk"><input type="checkbox" id="mi" ${s.minor ? 'checked' : ''}> Afficher les aspects mineurs (quinconce, semi-sextile, semi-carré, sesqui-carré) ${H('mineurs')}</label>
         <label>Lieu pour « Le ciel aujourd’hui »<div class="placebox"><input id="skyq" value="${esc((s.skyPlace || { name: 'Paris' }).name)}" autocomplete="off"><div id="placeres" class="placeres"></div></div></label>
       </div>
       <div class="card"><h3>Sauvegarde du carnet</h3><p>Le carnet est enregistré <b>uniquement dans ce navigateur</b>, sur cet appareil. Exporte-le régulièrement (fichier JSON) pour ne rien perdre, ou pour le transférer sur un autre téléphone.</p>
