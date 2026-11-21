@@ -104,6 +104,21 @@
     'donner forme à ses rêves et poser des limites à sa sensibilité.',
   ]) };
 
+  P.chiron = { intro: 'La blessure intime de {N}, celle qui devient une force en guérissant : ', by: z([
+    'oser s’affirmer et exister pleinement ; en la soignant, {N} apprend aux autres le courage.',
+    'se sentir en sécurité et digne de valeur ; en la soignant, {N} aide les autres à s’ancrer.',
+    'trouver sa place par la parole et le savoir ; en la soignant, {N} devient un passeur d’idées.',
+    'le besoin d’être protégé et d’appartenir ; en la soignant, {N} sait accueillir et consoler.',
+    'oser briller et être aimé pour ce qu’on est ; en la soignant, {N} aide les autres à rayonner.',
+    'l’exigence et la peur de ne pas être parfait ; en la soignant, {N} devient un vrai soignant du quotidien.',
+    'la relation et la peur du rejet ; en la soignant, {N} apprend aux autres l’équilibre à deux.',
+    'la confiance et la peur de la trahison ; en la soignant, {N} accompagne les autres dans leurs crises.',
+    'le sens de la vie et la foi ; en la soignant, {N} transmet une sagesse précieuse.',
+    'la réussite et l’autorité ; en la soignant, {N} devient un guide solide.',
+    'la différence et le sentiment de ne pas être comme les autres ; en la soignant, {N} rassemble.',
+    'la sensibilité à vif et les frontières floues ; en la soignant, {N} devient un guérisseur intuitif.',
+  ]) };
+
   // planètes lentes : générationnelles, la maison fait le côté personnel
   const GEN = {
     uranus: 'le besoin de liberté et de changement',

@@ -64,7 +64,7 @@
       for (const [l, lon] of labels) { const [x, y] = pt(lon, R.asp - 12); g += `<text x="${x}" y="${y}" class="ang" text-anchor="middle" dominant-baseline="central">${l}</text>`; }
     }
     // aspects
-    const shown = new Set(['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'node', 'asc', 'mc', 'lilith']);
+    const shown = new Set(['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'chiron', 'node', 'asc', 'mc', 'lilith']);
     const aspList = opts.aspects || ch.aspects;
     const lonOf = (key, src) => { const b = src.bodies.find((x) => x.key === key) || src.angles.find((x) => x.key === key); return b ? b.lon : null; };
     for (const a of aspList) {
@@ -166,7 +166,7 @@
     const proj = (alt, az) => { const z = (90 - alt) * D2R; const r = R * Math.tan(z / 2) / Math.tan(Math.PI / 4); const a = az * D2R; return [f1(c - r * Math.sin(a)), f1(c - r * Math.cos(a)), r]; };
     const sun = view.planets.find((p) => p.key === 'sun');
     const sa = sun.alt;
-    const sky = sa > 0 ? ['#3d6fb0', '#1d3c72'] : sa > -6 ? ['#30406e', '#1a1f45'] : sa > -12 ? ['#1d2150', '#100f2a'] : sa > -18 ? ['#141638', '#0a0a1e'] : ['#0d0d26', '#05050f'];
+    const sky = opts.night ? ['#141a45', '#05050f'] : sa > 0 ? ['#3d6fb0', '#1d3c72'] : sa > -6 ? ['#30406e', '#1a1f45'] : sa > -12 ? ['#1d2150', '#100f2a'] : sa > -18 ? ['#141638', '#0a0a1e'] : ['#0d0d26', '#05050f'];
     const dayDim = opts.realistic && sa > -6 ? 0.25 : 1;
     let g = `<svg viewBox="0 0 ${S} ${S}" class="skymap" role="img" aria-label="Carte du ciel"><defs><radialGradient id="skyg" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="${sky[1]}"/><stop offset="100%" stop-color="${sky[0]}"/></radialGradient><clipPath id="hz"><circle cx="${c}" cy="${c}" r="${R}"/></clipPath></defs>`;
     g += `<circle cx="${c}" cy="${c}" r="${R}" fill="url(#skyg)"/>`;

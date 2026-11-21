@@ -29,6 +29,7 @@
     uranus: { role: 'l’originalité, le besoin de liberté et les ruptures soudaines', short: 'liberté' },
     neptune: { role: 'l’idéal, l’imaginaire, la spiritualité et les illusions', short: 'rêve' },
     pluto: { role: 'la transformation profonde, le pouvoir et les renaissances', short: 'transformation' },
+    chiron: { role: 'la blessure intime et la capacité à guérir les autres', short: 'blessure' },
     node: { role: 'la direction d’évolution, ce vers quoi l’âme est appelée à grandir', short: 'destinée' },
     snode: { role: 'les acquis et les automatismes qu’il s’agit de dépasser', short: 'acquis' },
     lilith: { role: 'la part sauvage, les désirs refoulés, ce qui refuse de se soumettre', short: 'part sauvage' },

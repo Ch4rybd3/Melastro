@@ -39,6 +39,7 @@
     { key: 'uranus', name: 'Uranus', glyph: '♅', body: 'Uranus', w: 1, orb: 5 },
     { key: 'neptune', name: 'Neptune', glyph: '♆', body: 'Neptune', w: 1, orb: 5 },
     { key: 'pluto', name: 'Pluton', glyph: '♇', body: 'Pluto', w: 1, orb: 5 },
+    { key: 'chiron', name: 'Chiron', glyph: '⚷', w: 0.6, orb: 4 },
     { key: 'node', name: 'Nœud Nord', glyph: '☊', w: 0.5, orb: 4 },
     { key: 'snode', name: 'Nœud Sud', glyph: '☋', w: 0.3, orb: 3 },
     { key: 'lilith', name: 'Lilith', glyph: '⚸', w: 0.3, orb: 3 },
@@ -123,6 +124,19 @@
     const T = time.tt / 36525;
     // longitude moyenne du périgée lunaire (Chapront) + 180° = apogée moyen (Lune Noire)
     return norm(83.3532465 + 4069.0137287 * T - 0.01032 * T * T - T ** 3 / 80053 + T ** 4 / 18999000 + 180);
+  }
+
+  /* ---------- Chiron (table Swiss Ephemeris 1900-2100, interpolation de Lagrange) ---------- */
+  let CH = null;
+  function chironLon(time) {
+    const D = root.CHIRON; if (!D) return null;
+    if (!CH) { const bin = typeof atob !== 'undefined' ? atob(D.b64) : Buffer.from(D.b64, 'base64').toString('binary'); CH = new Uint16Array(bin.length / 2); for (let i = 0; i < CH.length; i++) CH[i] = bin.charCodeAt(2 * i) | (bin.charCodeAt(2 * i + 1) << 8); }
+    const jd = time.ut + 2451545.0, x = (jd - D.jd0) / D.step, i = Math.floor(x) - 1, t = x - (i + 1);
+    if (i < 0 || i + 3 >= CH.length) return null;
+    const p = [0, 1, 2, 3].map((k) => CH[i + k] / 100);
+    for (let k = 1; k < 4; k++) { while (p[k] - p[k - 1] > 180) p[k] -= 360; while (p[k] - p[k - 1] < -180) p[k] += 360; }
+    const L = [-t * (t - 1) * (t - 2) / 6, (t + 1) * (t - 1) * (t - 2) / 2, -(t + 1) * t * (t - 2) / 2, (t + 1) * t * (t - 1) / 6];
+    return norm(L[0] * p[0] + L[1] * p[1] + L[2] * p[2] + L[3] * p[3]);
   }
 
   /* ---------- Maisons ---------- */
@@ -268,6 +282,11 @@
       const e2 = bodyLon(p.body, time.AddDays(0.5)), e1 = bodyLon(p.body, time.AddDays(-0.5));
       const speed = angDiff(e2.lon, e1.lon);
       bodies.push({ ...p, lon: e.lon, lat: e.lat, speed, retro: speed < 0 });
+    }
+    if (chironLon(time) !== null) {
+      const cl = chironLon(time), c2 = chironLon(time.AddDays(0.5)), c1 = chironLon(time.AddDays(-0.5));
+      const csp = angDiff(c2, c1);
+      bodies.push({ ...PMAP.chiron, lon: cl, lat: 0, speed: csp, retro: csp < 0 });
     }
     const nodeLon = input.nodeType === 'mean' ? meanNode(time) : trueNode(time);
     const nodeSp = input.nodeType === 'mean' ? -0.0529 : angDiff(trueNode(time.AddDays(0.5)), trueNode(time.AddDays(-0.5)));
@@ -500,7 +519,7 @@
   const api = {
     SIGNS, PLANETS, PMAP, ASPECTS, HOUSE_SYSTEMS, DIGNITIES,
     norm, angDiff, signOf, fmtDeg, localToUTC, tzOffsetMinutes, formatOffset,
-    calcChart, houses, houseOf, aspectsBetween, transitsFor, solarReturn, synastry, moonPhaseName, skyView, dignity,
+    calcChart, houses, chironLon, bodyLon, meanNode, trueNode, trueObliquity, ascFromRamc, mcFromRamc, houseOf, aspectsBetween, transitsFor, solarReturn, synastry, moonPhaseName, skyView, dignity,
   };
   root.Engine = api;
   if (typeof module !== 'undefined') module.exports = api;

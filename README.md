@@ -19,6 +19,22 @@ Application d'astrologie en français, 100 % dans le navigateur, hébergée sur 
 - **Statistiques du carnet** : répartition des signes solaires, lunaires, ascendants, Vénus, éléments, aspects, anniversaires, duos les plus compatibles.
 - **Installable** sur iPhone (Safari → Partager → Sur l'écran d'accueil) et Android, fonctionne hors ligne.
 
+## Nouveautés v1.3
+
+- **Horoscope du jour personnalisé** (vrais transits sur le thème, météo astrale, conseil du jour), navigable jour par jour.
+- **Calendrier lunaire** mensuel : phases, signe de la Lune, changements de signe, **Lune hors cours**.
+- **Rétrogrades & éclipses** des 12 prochains mois, avec ce qu'ils activent pour chaque personne du carnet.
+- **Agenda des transits** sur 12 mois (frise + dates de début, d'exactitude et de fin).
+- **Chiron** (table Swiss Ephemeris 1900–2100, précision < 0,4′).
+- **Progressions secondaires**, **cycles de vie** (retours de Saturne, de Jupiter, de Chiron, opposition d'Uranus…).
+- **Astrocartographie** : lignes planétaires sur la carte du monde et villes concernées.
+- **Trouver l'heure** (rectification par portraits d'Ascendant) pour les profils sans heure.
+- **Journal astral** avec humeur corrélée à la Lune.
+- **Fiche PDF imprimable**, **affiche du ciel de naissance** (PNG 2400×3200).
+- **Synastrie de groupe** (matrice des affinités, énergie du groupe).
+- **Quiz** pour apprendre l'astrologie et **quiz sur soi** comparé au thème.
+- **Thèmes de couleurs** (Nuit, Aurore, Océan, Clair), **sauvegarde iCloud/Drive** via le partage, **export .ics** avec rappels, notification du jour.
+
 ## Précision
 
 Zodiaque tropical, positions géocentriques apparentes. Calculs vérifiés contre Swiss Ephemeris sur 12 dates aléatoires (1930-2030) : écart < 0,4′ pour les planètes et les nœuds, 0′ pour l'Ascendant, le MC et les cuspides de toutes les maisons. Fuseaux horaires historiques via la base IANA du navigateur (heure d'été, heure allemande 1940-1944…), avec possibilité de forcer un décalage manuel.
@@ -32,3 +48,5 @@ Aucune donnée n'est envoyée à un serveur : les profils restent dans le `local
 - [Astronomy Engine](https://github.com/cosinekitty/astronomy) — Don Cross, licence MIT
 - Catalogue d'étoiles et constellations : [d3-celestial](https://github.com/ofrohn/d3-celestial) — Olaf Frohn, licence BSD-3-Clause
 - Géocodage : [Open-Meteo](https://open-meteo.com/)
+- Chiron : table précalculée avec [Swiss Ephemeris](https://www.astro.com/swisseph/) (Astrodienst)
+- Fond de carte : [Natural Earth](https://www.naturalearthdata.com/) via world-atlas (ISC)

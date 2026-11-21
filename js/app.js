@@ -4,7 +4,7 @@
   const E = window.Engine, C = window.Charts, I = window.Interp, esc = C.esc, H = window.Help.H, PS = window.Perso;
   const $ = (s, el = document) => el.querySelector(s);
   const KEY = 'melastro.v1';
-  const VERSION = '1.2.0';
+  const VERSION = '1.3.0';
 
   /* ---------------- État & stockage ---------------- */
   const defaults = { houseSystem: 'placidus', nodeType: 'true', minor: true, skyLines: true, skyNames: true, realistic: false, lastBackup: null };
@@ -41,7 +41,8 @@
   function avatar(p) { const ch = chartOf(p); const s = ch.bodies[0].sign; return `<div class="av" style="--c:${p.color || C.ELC[s.element]}">${s.glyph}︎</div>`; }
 
   /* ---------------- Routeur ---------------- */
-  const views = { carnet: viewCarnet, profil: viewProfil, synastrie: viewSyn, ciel: viewSky, stats: viewStats, reglages: viewSettings };
+  const F = window.Features || { views: {}, ptabs: {}, after: {} };
+  const views = { carnet: viewCarnet, profil: viewProfil, synastrie: viewSyn, ciel: (tab, ...r) => F.ciel ? F.ciel(tab, viewSky, ...r) : viewSky(), stats: viewStats, reglages: viewSettings, ...F.views };
   function route() {
     const parts = (location.hash.replace(/^#\/?/, '') || 'carnet').split('/').map(decodeURIComponent);
     const v = views[parts[0]] ? parts[0] : 'carnet';
@@ -68,6 +69,7 @@
       <div><h1>Carnet des thèmes</h1><p class="sub">${P.length ? `${P.length} profil${P.length > 1 ? 's' : ''} enregistré${P.length > 1 ? 's' : ''}` : 'Aucun profil pour l’instant'}</p></div>
       <button class="btn primary" data-act="new">＋ Nouveau profil</button>
     </section>
+    ${F.reminders ? F.reminders() : ''}
     ${backupWarn ? `<div class="notice">💾 Pense à sauvegarder ton carnet (il est stocké uniquement sur cet appareil). <button class="btn sm" data-act="export">Exporter maintenant</button></div>` : ''}
     ${P.length ? `<div class="toolbar">
       <input type="search" id="q" placeholder="Rechercher un nom, un lieu, une note…" value="${esc(carnetFilter.q)}">
@@ -153,7 +155,7 @@
   const OFFLINE_CITIES = [['Paris', 48.8566, 2.3522], ['Marseille', 43.2965, 5.3698], ['Lyon', 45.764, 4.8357], ['Toulouse', 43.6047, 1.4442], ['Nice', 43.7102, 7.262], ['Nantes', 47.2184, -1.5536], ['Strasbourg', 48.5734, 7.7521], ['Montpellier', 43.6108, 3.8767], ['Bordeaux', 44.8378, -0.5792], ['Lille', 50.6292, 3.0573], ['Rennes', 48.1173, -1.6778], ['Reims', 49.2583, 4.0317], ['Le Havre', 49.4944, 0.1079], ['Saint-Étienne', 45.4397, 4.3872], ['Toulon', 43.1242, 5.928], ['Grenoble', 45.1885, 5.7245], ['Dijon', 47.322, 5.0415], ['Angers', 47.4784, -0.5632], ['Nîmes', 43.8367, 4.3601], ['Clermont-Ferrand', 45.7772, 3.087], ['Le Mans', 48.0061, 0.1996], ['Aix-en-Provence', 43.5297, 5.4474], ['Brest', 48.3904, -4.4861], ['Tours', 47.3941, 0.6848], ['Amiens', 49.8941, 2.2958], ['Limoges', 45.8336, 1.2611], ['Metz', 49.1193, 6.1757], ['Besançon', 47.2378, 6.0241], ['Perpignan', 42.6887, 2.8948], ['Orléans', 47.9029, 1.9093], ['Rouen', 49.4432, 1.0999], ['Caen', 49.1829, -0.3707], ['Nancy', 48.6921, 6.1844], ['Avignon', 43.9493, 4.8055], ['Poitiers', 46.5802, 0.3404], ['Pau', 43.2951, -0.3708], ['La Rochelle', 46.1603, -1.1511], ['Bayonne', 43.4929, -1.4748], ['Ajaccio', 41.9192, 8.7386], ['Annecy', 45.8992, 6.1294]];
 
   /* ================= PROFIL ================= */
-  const PTABS = [['theme', 'Thème'], ['positions', 'Positions'], ['aspects', 'Aspects'], ['lecture', 'Lecture'], ['dominantes', 'Dominantes'], ['ciel', 'Ciel de naissance'], ['transits', 'Transits'], ['revolution', 'Révolution solaire']];
+  const PTABS = [['theme', 'Thème'], ['horoscope', 'Horoscope'], ['lecture', 'Lecture'], ['heure', 'Trouver l’heure'], ['positions', 'Positions'], ['aspects', 'Aspects'], ['dominantes', 'Dominantes'], ['ciel', 'Ciel de naissance'], ['transits', 'Transits'], ['agenda', 'Agenda'], ['cycles', 'Cycles de vie'], ['progressions', 'Progressions'], ['revolution', 'Révolution solaire'], ['astrocarto', 'Astrocarto'], ['journal', 'Journal'], ['quizmoi', 'Quiz sur moi']];
   function viewProfil(id, tab = 'theme', extra) {
     const p = getP(id); if (!p) return `<div class="card"><p>Profil introuvable.</p><a href="#/carnet" class="btn">Retour au carnet</a></div>`;
     const ch = chartOf(p);
@@ -161,11 +163,12 @@
     const head = `<section class="phead">
       ${avatar(p)}<div class="grow"><h1>${esc(p.name)}</h1><p class="sub">${fmtDate(p.date)}${p.timeUnknown ? ' · heure inconnue' : ' à ' + p.time} · ${esc(p.place.name)} · ${E.formatOffset(ch.offsetMin)} · ${age(p.date)} ans</p>
       <div class="big3"><div><small>Soleil ${H('soleil')}</small>${sg(s.sign)} ${s.sign.name}</div><div><small>Lune ${H('lune')}</small>${sg(m.sign)} ${m.sign.name}</div>${p.timeUnknown ? '' : `<div><small>Ascendant ${H('ascendant')}</small>${sg(a.sign)} ${a.sign.name}</div>`}</div></div>
-      <div class="pact"><button class="btn sm" data-act="edit" data-id="${p.id}">✎ Modifier</button><a class="btn sm" href="#/synastrie/${p.id}">⚭ Comparer</a></div></section>
+      <div class="pact"><button class="btn sm" data-act="edit" data-id="${p.id}">✎ Modifier</button><a class="btn sm" href="#/synastrie/${p.id}">⚭ Comparer</a><a class="btn sm" href="#/fiche/${p.id}">🖨 Fiche PDF</a><a class="btn sm" href="#/affiche/${p.id}">✨ Affiche du ciel</a></div></section>
+      ${p.timeUnknown && tab !== 'heure' ? `<div class="notice">🕰 Heure de naissance inconnue : l’Ascendant et les maisons manquent. <a class="btn sm" href="#/profil/${p.id}/heure">Trouver l’heure probable</a></div>` : ''}
       ${ch.ambiguous ? '<div class="notice">⚠️ Cette heure tombe pendant un changement d’heure (heure d’été/hiver). Vérifie le décalage dans les réglages avancés du profil.</div>' : ''}
       ${ch.houseNote ? `<div class="notice">${esc(ch.houseNote)}</div>` : ''}
-      <nav class="tabs">${PTABS.map(([k, l]) => `<a href="#/profil/${p.id}/${k}" class="${k === tab ? 'on' : ''}">${l}</a>`).join('')}</nav>`;
-    const body = ({ theme: tabTheme, positions: tabPositions, aspects: tabAspects, lecture: tabLecture, dominantes: tabDominantes, ciel: tabCiel, transits: tabTransits, revolution: tabRevolution }[tab] || tabTheme)(p, ch, extra);
+      <nav class="tabs">${PTABS.filter(([k]) => k !== 'heure' || p.timeUnknown).map(([k, l]) => `<a href="#/profil/${p.id}/${k}" class="${k === tab ? 'on' : ''}">${l}</a>`).join('')}</nav>`;
+    const body = ({ theme: tabTheme, positions: tabPositions, aspects: tabAspects, lecture: tabLecture, dominantes: tabDominantes, ciel: tabCiel, transits: tabTransits, revolution: tabRevolution, ...F.ptabs }[tab] || tabTheme)(p, ch, extra);
     return head + body;
   }
 
@@ -217,7 +220,7 @@
   function tabLecture(p, ch) {
     const main = ch.bodies;
     return `<div class="card"><h3>Synthèse ${H('elements')}</h3><p>${I.elementSummary(ch.stats)}</p><p>${I.moonPhases[E.moonPhaseName(ch.moonPhase)]}</p><p><b>Forme ${ch.stats.shape.name}</b> : ${ch.stats.shape.desc}</p></div>
-      <div class="card"><h3>Planète par planète ${H('signes')}</h3>${main.map((b) => `<div class="lec"><div class="lec-g" style="color:${C.ELC[b.sign.element]}">${b.glyph}︎</div><div><h4>${b.name} en ${b.sign.name}${b.house ? ', maison ' + b.house : ''} ${H({ sun: 'soleil', moon: 'lune', node: 'noeuds', snode: 'noeuds', lilith: 'lilith', fortune: 'fortune' }[b.key] || '')}${b.dignity ? ' ' + H('dignites') : ''}</h4>${((r) => `<p>${r.perso}</p><p class="theory">${r.theory}</p>`)(PS.planetReading(b, ch, p.name))}</div></div>`).join('')}</div>
+      <div class="card"><h3>Planète par planète ${H('signes')}</h3>${main.map((b) => `<div class="lec"><div class="lec-g" style="color:${C.ELC[b.sign.element]}">${b.glyph}︎</div><div><h4>${b.name} en ${b.sign.name}${b.house ? ', maison ' + b.house : ''} ${H({ sun: 'soleil', moon: 'lune', chiron: 'chiron', node: 'noeuds', snode: 'noeuds', lilith: 'lilith', fortune: 'fortune' }[b.key] || '')}${b.dignity ? ' ' + H('dignites') : ''}</h4>${((r) => `<p>${r.perso}</p><p class="theory">${r.theory}</p>`)(PS.planetReading(b, ch, p.name))}</div></div>`).join('')}</div>
       ${ch.noTime ? '' : `<div class="card"><h3>Les maisons habitées ${H('maisons')}</h3>${I.houses.map((h, i) => { const occ = main.filter((b) => b.house === i + 1 && E.PMAP[b.key].body); return occ.length ? `<p><b>${h.name}</b> (${h.kw}) : ${occ.map((b) => b.name).join(', ')}.</p>` : ''; }).join('')}<p class="muted small">Les maisons vides ne sont pas « inactives » : elles s’expriment à travers leur maître et le signe de leur cuspide.</p></div>`}
       <div class="card"><h3>Aspects majeurs ${H('aspects')}</h3>${ch.aspects.filter((a) => a.major).slice(0, 14).map((a) => `<p><b style="color:${C.ASPC[a.nature]}">${a.glyph}</b> <b>${a.an} ${a.name.toLowerCase()} ${a.bn}</b> — ${PS.aspectReading(a, p.name)}</p><p class="theory">${I.aspectText(a)}</p>`).join('')}</div>`;
   }
@@ -270,7 +273,8 @@
       </div></div>`;
   }
   const azName = (az) => ['Nord', 'Nord-Est', 'Est', 'Sud-Est', 'Sud', 'Sud-Ouest', 'Ouest', 'Nord-Ouest'][Math.round(az / 45) % 8];
-  afterRender.profil = (id, tab) => {
+  afterRender.profil = (id, tab, extra) => {
+    if (F.afterProfil) F.afterProfil(id, tab, extra);
     if (tab === 'ciel') { const bind = (sel, key) => { const el = $(sel); if (el) el.onchange = () => { state.settings[key] = el.checked; save(); route(); }; }; bind('#skl', 'skyLines'); bind('#skn', 'skyNames'); bind('#skr', 'realistic'); }
     if (tab === 'transits') { const d = $('#trdate'); if (d) d.onchange = () => { location.hash = `#/profil/${id}/transits/${d.value}`; }; }
     if (tab === 'revolution') { const y = $('#sry'); if (y) y.onchange = () => { location.hash = `#/profil/${id}/revolution/${y.value}`; }; }
@@ -396,13 +400,15 @@
         <label class="chk"><input type="checkbox" id="mi" ${s.minor ? 'checked' : ''}> Afficher les aspects mineurs (quinconce, semi-sextile, semi-carré, sesqui-carré) ${H('mineurs')}</label>
         <label>Lieu pour « Le ciel aujourd’hui »<div class="placebox"><input id="skyq" value="${esc((s.skyPlace || { name: 'Paris' }).name)}" autocomplete="off"><div id="placeres" class="placeres"></div></div></label>
       </div>
+      ${F.settingsHtml ? F.settingsHtml() : ''}
       <div class="card"><h3>Sauvegarde du carnet</h3><p>Le carnet est enregistré <b>uniquement dans ce navigateur</b>, sur cet appareil. Exporte-le régulièrement (fichier JSON) pour ne rien perdre, ou pour le transférer sur un autre téléphone.</p>
         <p class="muted small">Dernière sauvegarde : ${s.lastBackup ? new Date(s.lastBackup).toLocaleString('fr-FR') : 'jamais'}</p>
-        <div class="row wrap"><button class="btn primary" data-act="export">💾 Exporter le carnet</button><button class="btn" data-act="import">📂 Importer</button><button class="btn danger" data-act="wipe">Tout effacer</button></div></div>
+        <div class="row wrap"><button class="btn primary" data-act="export">💾 Exporter le carnet</button><button class="btn" data-act="cloud">☁️ Sauvegarder vers iCloud / Drive</button><button class="btn" data-act="import">📂 Importer</button><button class="btn danger" data-act="wipe">Tout effacer</button></div></div>
       <div class="card span2"><h3>À propos des calculs</h3><p class="small">Zodiaque tropical, positions géocentriques apparentes calculées avec <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">Astronomy Engine</a> (précision vérifiée à moins d’une minute d’arc par rapport à Swiss Ephemeris). Les fuseaux horaires historiques (heure d’été, heure allemande de 1940-1944, etc.) proviennent de la base IANA intégrée au navigateur. La recherche de ville utilise Open-Meteo. Le catalogue d’étoiles (3 200 étoiles jusqu’à la magnitude 5,6) et les figures des constellations proviennent de d3-celestial.</p>
       <p class="small">📱 <b>Installer sur iPhone</b> : ouvre Mélastro dans Safari → bouton Partager → « Sur l’écran d’accueil ». Sur Android : menu de Chrome → « Installer l’application ».</p></div></div>`;
   }
   afterRender.reglages = () => {
+    if (F.afterSettings) F.afterSettings();
     $('#hs').onchange = (e) => { state.settings.houseSystem = e.target.value; save(); toast('Système de maisons : ' + E.HOUSE_SYSTEMS[e.target.value]); };
     $('#nt').onchange = (e) => { state.settings.nodeType = e.target.value; save(); };
     $('#mi').onchange = (e) => { state.settings.minor = e.target.checked; chartCache.clear(); save(); };
@@ -443,6 +449,7 @@
     else if (act === 'export') exportData();
     else if (act === 'import') importData();
     else if (act === 'wipe') { if (confirm('Effacer tout le carnet de cet appareil ? Pense à exporter avant.') && confirm('Vraiment tout effacer ?')) { state.profiles = []; save(); route(); } }
+    else if (F.act && F.act(act, b)) { /* géré par Features */ }
     else if (act === 'demo') {
       const demo = [
         { name: 'Exemple — Albert Einstein', date: '1879-03-14', time: '11:30', place: { name: 'Ulm (Allemagne)', lat: 48.4011, lon: 9.9876, tz: null }, tzOverride: 0.6656, tags: ['exemple', 'célébrités'] },
@@ -456,5 +463,9 @@
   /* ---------------- PWA ---------------- */
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 
+  Object.assign(afterRender, F.after || {});
+  window.App = { state, save, chartOf, getP, toast, route, fmtDate, fmtDT, avatar, sg, esc, H, age, nextBday, exportData, uid, invalidate: () => chartCache.clear() };
+  document.documentElement.dataset.theme = state.settings.theme || 'nuit';
+  if (F.init) F.init();
   route();
 })();
