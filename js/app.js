@@ -4,7 +4,7 @@
   const E = window.Engine, C = window.Charts, I = window.Interp, esc = C.esc;
   const $ = (s, el = document) => el.querySelector(s);
   const KEY = 'melastro.v1';
-  const VERSION = '1.0.0';
+  const VERSION = '1.0.1';
 
   /* ---------------- État & stockage ---------------- */
   const defaults = { houseSystem: 'placidus', nodeType: 'true', minor: true, skyLines: true, skyNames: true, realistic: false, lastBackup: null };
@@ -98,7 +98,7 @@
   function openForm(p) {
     const isNew = !p; p = p || { name: '', date: '', time: '', timeUnknown: false, place: { name: '', lat: '', lon: '', tz: 'Europe/Paris' }, tzOverride: '', notes: '', tags: [], color: '' };
     const dlg = $('#dlg');
-    dlg.innerHTML = `<form method="dialog" class="form" id="pf">
+    dlg.innerHTML = `<form method="dialog" class="form" id="pf" novalidate>
       <h2>${isNew ? 'Nouveau profil' : 'Modifier le profil'}</h2>
       <label>Prénom / nom<input name="name" required value="${esc(p.name)}" autocomplete="off"></label>
       <div class="two"><label>Date de naissance<input type="date" name="date" required value="${esc(p.date)}" min="1800-01-01" max="2100-12-31"></label>
@@ -107,8 +107,8 @@
       <label>Lieu de naissance<div class="placebox"><input name="placeq" placeholder="Tape une ville…" value="${esc(p.place.name)}" autocomplete="off"><div id="placeres" class="placeres"></div></div></label>
       <div class="placeinfo" id="placeinfo">${p.place.lat !== '' ? placeInfo(p.place) : '<span class="muted">Choisis une ville dans la liste.</span>'}</div>
       <details ${p.tzOverride !== '' && p.tzOverride !== null && p.tzOverride !== undefined ? 'open' : ''}><summary>Réglages avancés (coordonnées, fuseau)</summary>
-        <div class="three"><label>Latitude<input name="lat" type="number" step="0.0001" value="${esc(p.place.lat)}"></label><label>Longitude<input name="lon" type="number" step="0.0001" value="${esc(p.place.lon)}"></label><label>Fuseau IANA<input name="tz" value="${esc(p.place.tz || '')}" placeholder="Europe/Paris"></label></div>
-        <label>Décalage UTC forcé (heures, ex. 1 ou -5) — laisse vide pour utiliser le fuseau historique<input name="tzOverride" type="number" step="0.25" value="${esc(p.tzOverride ?? '')}"></label>
+        <div class="three"><label>Latitude<input name="lat" type="number" step="any" value="${esc(p.place.lat)}"></label><label>Longitude<input name="lon" type="number" step="any" value="${esc(p.place.lon)}"></label><label>Fuseau IANA<input name="tz" value="${esc(p.place.tz || '')}" placeholder="Europe/Paris"></label></div>
+        <label>Décalage UTC forcé (heures, ex. 1 ou -5) — laisse vide pour utiliser le fuseau historique<input name="tzOverride" type="number" step="any" value="${esc(p.tzOverride ?? '')}"></label>
       </details>
       <label>Étiquettes (séparées par des virgules)<input name="tags" value="${esc((p.tags || []).join(', '))}" placeholder="famille, amis, célébrités…"></label>
       <label>Notes<textarea name="notes" rows="3">${esc(p.notes || '')}</textarea></label>
@@ -123,12 +123,15 @@
     f.placeq.oninput = () => { clearTimeout(timer); timer = setTimeout(() => searchPlace(f.placeq.value, f), 300); };
     f.onsubmit = (ev) => {
       ev.preventDefault();
-      const lat = parseFloat(f.lat.value), lon = parseFloat(f.lon.value);
+      if (!f.name.value.trim()) { toast('Indique un prénom ou un nom.'); f.name.focus(); return; }
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(f.date.value)) { toast('Indique une date de naissance valide.'); f.date.focus(); return; }
+      const lat = parseFloat(String(f.lat.value).replace(',', '.')), lon = parseFloat(String(f.lon.value).replace(',', '.'));
+      if (Math.abs(lat) > 90 || Math.abs(lon) > 180) { toast('Coordonnées hors limites.'); return; }
       if (isNaN(lat) || isNaN(lon)) { toast('Choisis un lieu dans la liste ou saisis les coordonnées.'); return; }
       if (!f.timeUnknown.checked && !f.time.value) { toast('Indique l’heure de naissance ou coche « Heure inconnue ».'); return; }
       const tz = f.tz.value.trim();
       if (tz) { try { new Intl.DateTimeFormat('fr', { timeZone: tz }); } catch (e) { toast('Fuseau horaire inconnu : ' + tz); return; } }
-      const data = { name: f.name.value.trim(), date: f.date.value, time: f.time.value, timeUnknown: f.timeUnknown.checked, place: { name: f.placeq.value.trim(), lat, lon, tz: tz || null }, tzOverride: f.tzOverride.value === '' ? '' : parseFloat(f.tzOverride.value), notes: f.notes.value, tags: f.tags.value.split(',').map((s) => s.trim()).filter(Boolean), updatedAt: Date.now() };
+      const data = { name: f.name.value.trim(), date: f.date.value, time: f.time.value, timeUnknown: f.timeUnknown.checked, place: { name: f.placeq.value.trim(), lat, lon, tz: tz || null }, tzOverride: f.tzOverride.value === '' || isNaN(parseFloat(f.tzOverride.value)) ? '' : parseFloat(f.tzOverride.value), notes: f.notes.value, tags: f.tags.value.split(',').map((s) => s.trim()).filter(Boolean), updatedAt: Date.now() };
       if (isNew) { const np = { id: uid(), createdAt: Date.now(), ...data }; state.profiles.push(np); save(); dlg.close(); location.hash = '#/profil/' + np.id; }
       else { Object.assign(p, data); save(); dlg.close(); route(); }
       toast('Profil enregistré ✓');
@@ -178,7 +181,7 @@
           <dl class="kv">
             <dt>Élément dominant</dt><dd>${I.elements[st.domEl[0][0]].name}</dd>
             <dt>Mode dominant</dt><dd>${I.modes[st.domMo[0][0]].name}</dd>
-            <dt>Planète dominante</dt><dd>${E.PMAP[st.ranking[0][0]].glyph}︎ ${E.PMAP[st.ranking[0][0]].name}</dd>
+            <dt>Planète dominante</dt><dd title="${esc(I.dominant[st.ranking[0][0]].txt)}">${E.PMAP[st.ranking[0][0]].glyph}︎ ${E.PMAP[st.ranking[0][0]].name} <span class="muted small">(type ${I.dominant[st.ranking[0][0]].type.toLowerCase()})</span></dd>
             ${ch.noTime ? '' : `<dt>Maître d’Ascendant</dt><dd>${E.PMAP[ch.angles[0].sign.ruler].name} en ${ch.bodies.find((b) => b.key === ch.angles[0].sign.ruler).sign.name}</dd>`}
             <dt>Phase lunaire</dt><dd>${C.moonIcon(ch.moonPhase, 22)} ${E.moonPhaseName(ch.moonPhase)}</dd>
             <dt>Naissance</dt><dd>${ch.diurnal ? '☀️ de jour' : '🌙 de nuit'}</dd>
@@ -229,10 +232,29 @@
       <div class="card"><h3>Modes</h3>${C.hbars(['cardinal', 'fixe', 'mutable'].map((m) => ({ label: I.modes[m].name, value: pct(st.mo[m], moTot), color: 'var(--accent)', title: I.modes[m].txt })), { max: 100, fmt: (v) => v + ' %' })}
         <h3 style="margin-top:1rem">Polarité</h3>${C.hbars([{ label: 'Yang (feu, air)', value: pct(st.pol['+'], elTot), color: 'var(--gold)' }, { label: 'Yin (terre, eau)', value: pct(st.pol['-'], elTot), color: 'var(--accent)' }], { max: 100, fmt: (v) => v + ' %' })}</div>
       <div class="card"><h3>Planètes dominantes</h3>${C.hbars(pr)}<p class="muted small">Score combinant angularité, maîtrises (Ascendant, MC, luminaires), dignités et nombre d’aspects.</p></div>
+      <div class="card span2"><h3>Interprétation des dominantes</h3>${st.ranking.slice(0, 3).map(([k, v], i) => { const d = I.dominant[k], b = ch.bodies.find((x) => x.key === k); return `<div class="lec"><div class="lec-g" style="color:var(--gold)">${E.PMAP[k].glyph}\uFE0E</div><div><h4>${i === 0 ? 'Planète dominante' : i === 1 ? 'Deuxième dominante' : 'Troisième dominante'} : ${E.PMAP[k].name} <span class="muted small">(type ${d.type.toLowerCase()} · score ${v})</span></h4><p>${d.txt}</p><p class="small">${E.PMAP[k].name} en ${b.sign.name}${b.house ? ', maison ' + b.house : ''} : cette énergie s’exprime de manière ${I.signs[b.sign.key].adj}${b.house ? ', surtout dans ' + I.houses[b.house - 1].kw : ''}.</p><p class="small muted">Pourquoi elle domine : ${domReasons(ch, b).join(' · ')}</p></div></div>`; }).join('')}</div>
       ${ch.noTime ? '' : `<div class="card"><h3>Hémisphères</h3>${C.hbars([{ label: 'Est — affirmation de soi', value: pct(st.hemi.est, st.hemi.est + st.hemi.ouest), color: 'var(--gold)' }, { label: 'Ouest — tourné vers l’autre', value: pct(st.hemi.ouest, st.hemi.est + st.hemi.ouest), color: 'var(--accent)' }, { label: 'Sud — vie publique', value: pct(st.hemi.sud, st.hemi.nord + st.hemi.sud), color: 'var(--gold)' }, { label: 'Nord — vie intime', value: pct(st.hemi.nord, st.hemi.nord + st.hemi.sud), color: 'var(--accent)' }], { max: 100, fmt: (v) => v + ' %' })}</div>`}
       <div class="card span2"><h3>Poids par signe</h3>${C.signColumns(st.signScore.map((v) => Math.round(v * 10) / 10), { label: 'Poids par signe' })}</div>
       ${ch.noTime ? '' : `<div class="card span2"><h3>Poids par maison</h3>${C.hbars(st.houseScore.map((v, i) => ({ label: I.houses[i].name, value: Math.round(v * 10) / 10, color: 'var(--accent)', title: I.houses[i].kw })))}</div>`}
     </div>`;
+  }
+
+  function domReasons(ch, b) {
+    const r = [];
+    if (!ch.noTime) {
+      const angs = [['à l’Ascendant', ch.angles[0].lon], ['au Milieu du Ciel', ch.angles[1].lon], ['au Descendant', ch.angles[2].lon], ['au Fond du Ciel', ch.angles[3].lon]];
+      for (const [n, l] of angs) { const o = Math.abs(E.angDiff(b.lon, l)); if (o < 10) r.push(`conjointe ${n} (${o.toFixed(1)}°)`); }
+      if (ch.angles[0].sign.ruler === b.key) r.push('maîtresse de l’Ascendant');
+      if (ch.angles[1].sign.ruler === b.key) r.push('maîtresse du Milieu du Ciel');
+      if ([1, 10].includes(b.house)) r.push('en maison angulaire ' + b.house);
+    }
+    if (ch.bodies[0].sign.ruler === b.key && b.key !== 'sun') r.push('maîtresse du signe solaire');
+    if (ch.bodies[1].sign.ruler === b.key && b.key !== 'moon') r.push('maîtresse du signe lunaire');
+    if (b.key === 'sun' || b.key === 'moon') r.push('luminaire');
+    if (b.dignity && b.dignity.score > 0) r.push(b.dignity.label.toLowerCase());
+    const n = ch.aspects.filter((a) => a.major && (a.a === b.key || a.b === b.key)).length;
+    if (n >= 4) r.push(n + ' aspects majeurs');
+    return r.length ? r : ['présence équilibrée dans le thème'];
   }
 
   function tabCiel(p, ch) {

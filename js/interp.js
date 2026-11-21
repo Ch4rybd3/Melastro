@@ -74,7 +74,20 @@
     mutable: { name: 'Mutable', txt: 'adapter, transmettre, transformer' },
   };
 
-  T.retro = 'Rétrograde : l’énergie de la planète se tourne vers l’intérieur, elle se vit de façon plus introspective, décalée ou à retardement.';
+  T.dominant = {
+    sun: { type: 'Solaire', txt: 'Une personnalité qui a besoin de rayonner, d’être reconnue et de donner un sens à sa vie. Fierté, volonté, sens de l’honneur et générosité ; le besoin d’exister pleinement et parfois de briller au centre.' },
+    moon: { type: 'Lunaire', txt: 'Une nature sensible, réceptive et intuitive, très connectée à ses émotions et à celles des autres. Attachement au foyer, à la famille et aux souvenirs ; l’humeur fluctue, l’imagination est riche.' },
+    mercury: { type: 'Mercurien', txt: 'Un esprit vif, curieux et communicatif qui vit par les idées, les mots et les échanges. Adaptabilité, humour, goût d’apprendre et de transmettre ; parfois nerveux ou dispersé.' },
+    venus: { type: 'Vénusien', txt: 'Une personnalité tournée vers l’harmonie, la beauté et la relation. Charme, sens esthétique, douceur et goût du plaisir ; l’amour et l’art occupent une place centrale, avec un besoin d’être aimé(e).' },
+    mars: { type: 'Martien', txt: 'Une énergie d’action, de courage et de conquête. Franchise, esprit de compétition, besoin de défis et de mouvement ; impatience et impulsivité à canaliser.' },
+    jupiter: { type: 'Jupitérien', txt: 'Une nature optimiste, généreuse et expansive, en quête de sens et de croissance. Confiance, sociabilité, goût des voyages, du savoir et de la transmission ; tendance à l’excès ou à trop promettre.' },
+    saturn: { type: 'Saturnien', txt: 'Une personnalité sérieuse, responsable et persévérante, qui construit dans la durée. Rigueur, sens du devoir, profondeur et maturité ; parfois réservée, exigeante envers elle-même ou inquiète.' },
+    uranus: { type: 'Uranien', txt: 'Un esprit libre, original et indépendant, souvent en avance sur son temps. Besoin de liberté, d’innovation et de changement ; intuitions fulgurantes, refus des conventions et des contraintes.' },
+    neptune: { type: 'Neptunien', txt: 'Une sensibilité poreuse, artistique et spirituelle. Imagination, compassion, intuition, attrait pour le rêve, la musique et l’invisible ; difficulté parfois à poser des limites ou à voir la réalité en face.' },
+    pluto: { type: 'Plutonien', txt: 'Une personnalité intense, magnétique et profonde, qui traverse la vie par cycles de transformation. Lucidité, force intérieure, attrait pour les mystères et le pouvoir ; tout ou rien.' },
+  };
+
+  T.retro ='Rétrograde : l’énergie de la planète se tourne vers l’intérieur, elle se vit de façon plus introspective, décalée ou à retardement.';
 
   T.moonPhases = {
     'Nouvelle Lune': 'Né(e) à la Nouvelle Lune : tempérament instinctif, tourné vers le nouveau, qui agit par élan subjectif.',
