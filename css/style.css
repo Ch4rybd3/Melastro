@@ -183,3 +183,23 @@ a.chip:hover { border-color: var(--accent); }
 .helpbox { padding: 1.1rem 1.3rem; } .helpbox p { color: var(--ink); line-height: 1.6; }
 .theory { display: block; font-size: .82rem; color: var(--muted); border-left: 2px solid var(--line2); padding-left: .6rem; margin-top: -.3rem; }
 .theory::before { content: 'En théorie · '; color: var(--accent); font-weight: 600; }
+
+/* synastrie guidée */
+.synhead { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; }
+.sp1 { display: flex; gap: .7rem; align-items: center; } .sp1.r { flex-direction: row-reverse; text-align: right; }
+.sp1 b { font-family: var(--serif); font-size: 1.3rem; }
+@media (max-width: 600px) { .synhead { grid-template-columns: 1fr; justify-items: center; text-align: center; } .sp1, .sp1.r { flex-direction: column; text-align: center; } }
+h2.sec { margin: 1.6rem 0 .6rem; font-size: 1.4rem; color: var(--ink); }
+.cmp th { white-space: nowrap; } .cmp tbody th { color: var(--gold); font-family: var(--serif); font-size: 1.05rem; text-transform: none; letter-spacing: 0; font-weight: 600; border-bottom: 1px solid var(--line); }
+.rel { font-size: .8rem; font-weight: 600; padding: .05rem .5rem; border-radius: 999px; white-space: nowrap; }
+.rel.same { background: rgba(57, 135, 229, .2); color: #8fbaf2; } .rel.comp { background: rgba(25, 158, 112, .2); color: #6fd8ad; } .rel.diff { background: rgba(201, 133, 0, .2); color: #e8c25a; }
+.doms { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem; }
+.dom-h { display: flex; justify-content: space-between; margin-bottom: .35rem; } .dom-l { font-size: .8rem; color: var(--gold); }
+.dom p { margin: .45rem 0 0; }
+.sxl { list-style: none; margin: 0; padding: 0; }
+.sx { padding: .8rem 0 .8rem .9rem; border-bottom: 1px solid var(--line); border-left: 3px solid var(--line2); margin-bottom: .2rem; }
+.sx.good { border-left-color: #3987e5; } .sx.hard { border-left-color: #e66767; }
+.sx-h { font-size: .92rem; } .sx-ic { margin-right: .35rem; } .sx-asp { font-size: .85rem; margin: 0 .3rem; }
+.sx p { margin: .35rem 0; }
+details.card > summary { color: var(--ink2); }
+.plist li > span { flex: 1; min-width: 0; }

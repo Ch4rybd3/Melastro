@@ -4,7 +4,7 @@
   const E = window.Engine, C = window.Charts, I = window.Interp, esc = C.esc, H = window.Help.H, PS = window.Perso;
   const $ = (s, el = document) => el.querySelector(s);
   const KEY = 'melastro.v1';
-  const VERSION = '1.1.0';
+  const VERSION = '1.2.0';
 
   /* ---------------- État & stockage ---------------- */
   const defaults = { houseSystem: 'placidus', nodeType: 'true', minor: true, skyLines: true, skyNames: true, realistic: false, lastBackup: null };
@@ -310,27 +310,13 @@
     const P = state.profiles;
     if (P.length < 2) return `<div class="card"><h2>Synastrie</h2><p>Il faut au moins deux profils dans le carnet pour les comparer.</p><button class="btn primary" data-act="new">Ajouter un profil</button></div>`;
     const opt = (sel) => P.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr')).map((p) => `<option value="${p.id}" ${p.id === sel ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
-    const sel = `<section class="hero"><div><h1>Synastrie ${H('synastrie')}</h1><p class="sub">Comparer deux thèmes : compatibilité, aspects croisés, maisons, thème composite.</p></div></section>
+    const sel = `<section class="hero"><div><h1>Synastrie ${H('synastrie')}</h1><p class="sub">Choisis deux personnes : Mélastro compare leurs thèmes et explique, étape par étape, ce qui les rapproche et ce qui peut coincer.</p></div></section>
       <div class="toolbar syn"><select id="s1"><option value="">— Profil 1 —</option>${opt(id1)}</select><span class="amp">⚭</span><select id="s2"><option value="">— Profil 2 —</option>${opt(id2)}</select></div>`;
     const p1 = getP(id1), p2 = getP(id2);
     if (!p1 || !p2 || p1 === p2) return sel + '<div class="card muted">Choisis deux profils différents.</div>';
     const c1 = chartOf(p1), c2 = chartOf(p2);
     const syn = E.synastry(c1, c2);
-    const n1 = esc(p1.name), n2 = esc(p2.name);
-    const dl = { amour: 'Amour & tendresse', communication: 'Communication', quotidien: 'Vie quotidienne', passion: 'Passion & désir', durabilite: 'Solidité & durée' };
-    const top = syn.aspects.slice(0, 30);
-    const ov = (list, owner, host) => list.length ? `<table class="tbl"><tbody>${list.map((o) => `<tr><td>${o.glyph}︎ ${o.name} de ${owner}</td><td>maison ${o.house} de ${host}</td><td class="muted small">${I.houses[o.house - 1].kw}</td></tr>`).join('')}</tbody></table>` : '<p class="muted">Heure inconnue : superposition impossible.</p>';
-    return sel + `<div class="split">
-      <div class="card wheelcard">${C.wheel(c2, { outer: c1, aspects: syn.aspects })}<p class="muted small">Intérieur : ${n2} · extérieur : ${n1}.</p></div>
-      <div class="col">
-        <div class="card score"><div class="ring" style="--v:${syn.score}"><span>${syn.score}</span><small>/100</small></div><div><h3>${n1} & ${n2} ${H('score')}</h3><p>${syn.score >= 75 ? 'Une belle affinité : beaucoup d’échanges fluides entre vos thèmes.' : syn.score >= 55 ? 'Une relation équilibrée, entre complicité et défis stimulants.' : syn.score >= 40 ? 'Une relation qui demande des ajustements, mais riche d’apprentissages.' : 'Des énergies contrastées : la relation sera intense et formatrice.'}</p><p class="muted small">${syn.aspects.filter((a) => a.nature === 'fluide').length} aspects fluides · ${syn.aspects.filter((a) => a.nature === 'tendu').length} tendus · ${syn.aspects.filter((a) => a.key === 'conj').length} conjonctions</p></div></div>
-        <div class="card"><h3>Par domaine</h3>${C.hbars(Object.entries(syn.domains).map(([k, v]) => ({ label: dl[k], value: v, color: 'var(--accent)' })), { max: 100, fmt: (v) => v + ' %' })}</div>
-        <div class="card"><h3>Éléments croisés ${H('elementsCroises')}</h3><dl class="kv"><dt>Soleil ↔ Soleil</dt><dd>${c1.bodies[0].sign.name} / ${c2.bodies[0].sign.name} — ${syn.sunMoon.sun}</dd><dt>Lune ↔ Lune</dt><dd>${c1.bodies[1].sign.name} / ${c2.bodies[1].sign.name} — ${syn.sunMoon.moon}</dd><dt>Vénus de ${n1} ↔ Mars de ${n2}</dt><dd>${syn.sunMoon.venusMars}</dd><dt>Mars de ${n1} ↔ Vénus de ${n2}</dt><dd>${syn.sunMoon.marsVenus}</dd></dl></div>
-      </div></div>
-      <div class="card"><h3>Aspects croisés principaux ${H('aspects')}</h3><ul class="asplist">${top.map((a) => `<li><span class="ag" style="color:${C.ASPC[a.nature]}">${a.ag}︎ ${a.glyph} ${a.bg}︎</span><div>${I.synText(a, n1, n2)} <span class="muted small">orbe ${a.orb.toFixed(1)}°</span></div></li>`).join('')}</ul></div>
-      <div class="grid2"><div class="card"><h3>Planètes de ${n2} dans les maisons de ${n1} ${H('superposition')}</h3>${ov(syn.overlay, n2, n1)}</div><div class="card"><h3>Planètes de ${n1} dans les maisons de ${n2}</h3>${ov(syn.overlay2, n1, n2)}</div></div>
-      <div class="card"><h3>Thème composite ${H('composite')}</h3><p class="small muted">Le composite décrit la relation elle-même comme une entité.</p><div class="chips">${syn.composite.filter((b) => E.PMAP[b.key].body).map((b) => `<span class="chip">${b.glyph}︎ ${b.name} ${sg(b.sign)} ${E.fmtDeg(b.lon, false)}</span>`).join('')}</div>
-      <p>Soleil composite en <b>${syn.composite[0].sign.name}</b> : la relation se vit sur un mode ${I.signs[syn.composite[0].sign.key].adj}. Vénus composite en <b>${syn.composite[3].sign.name}</b> : l’affection s’exprime de façon ${I.signs[syn.composite[3].sign.key].adj}.</p></div>`;
+    return sel + window.SynView.render(p1, p2, c1, c2, syn, avatar);
   }
   afterRender.synastrie = (a, b) => { const s1 = $('#s1'), s2 = $('#s2'); if (!s1) return; const go = () => (location.hash = `#/synastrie/${s1.value}/${s2.value}`); s1.onchange = go; s2.onchange = go; void a; void b; };
 
